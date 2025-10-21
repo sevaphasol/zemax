@@ -1,0 +1,3 @@
+[submodule "gfxlib"]
+	path = gfxlib
+	url = git@github.com:sevaphasol/gfxlib.git

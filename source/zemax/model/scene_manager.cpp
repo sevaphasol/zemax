@@ -1,0 +1,175 @@
+#include "zemax/model/scene_manager.hpp"
+#include "gfx/core/color.hpp"
+#include "gfx/core/vector3.hpp"
+#include "zemax/model/camera.hpp"
+#include "zemax/model/material.hpp"
+#include "zemax/model/plane.hpp"
+#include "zemax/model/primitive.hpp"
+#include "zemax/model/sphere.hpp"
+#include <cassert>
+#include <memory>
+
+namespace zemax {
+namespace model {
+
+SceneManager::SceneManager( const gfx::core::Vector3f& camera_pos,
+                            float                      screen_width,
+                            float                      screen_height )
+    : camera_( camera_pos, screen_width, screen_height )
+{
+}
+
+void
+SceneManager::addLight( gfx::core::Vector3f pos,
+                        float               embedded_intensity,
+                        float               diffuse_intensity,
+                        float               glare_intensity )
+{
+    lights_.push_back( Light( pos, embedded_intensity, diffuse_intensity, glare_intensity ) );
+}
+
+void
+SceneManager::addSphere( const Material& material, const gfx::core::Vector3f& center, float radius )
+{
+    objects_.push_back( std::make_unique<Sphere>( material, center, radius ) );
+}
+
+void
+SceneManager::addPlane( const Material&            material,
+                        const gfx::core::Vector3f& base_point,
+                        const gfx::core::Vector3f& normal )
+{
+    objects_.push_back( std::make_unique<Plane>( material, base_point, normal ) );
+}
+
+void
+SceneManager::addCube( const Material& material, const gfx::core::Vector3f& center, float side )
+{
+    assert( !"Not supported" );
+    // objects_.push_back( std::make_unique<Cube>( material, center, side ) );
+}
+
+void
+SceneManager::moveLights( const gfx::core::Vector3f& delta )
+{
+    for ( auto& light : lights_ )
+    {
+        light.move( delta );
+    }
+}
+
+bool
+SceneManager::findClosestIntersection( IntersectionContext& ctx )
+{
+    bool  hit          = false;
+    float min_distance = std::numeric_limits<float>::max();
+
+    for ( auto& object : objects_ )
+    {
+        const gfx::core::Vector3f point = object->calcRayIntersection( ctx.view_ray );
+
+        if ( point.valid() )
+        {
+            float distance = ( point - ctx.view_ray.getBasePoint() ).getLen();
+            if ( distance > 0 && distance < min_distance )
+            {
+                min_distance           = distance;
+                ctx.closest_object     = object.get();
+                ctx.intersection_point = point;
+                ctx.normal             = object->normal( point );
+                hit                    = true;
+            }
+        }
+    }
+
+    return hit;
+}
+
+gfx::core::Color
+SceneManager::calcLightsColor( IntersectionContext& ctx )
+{
+    gfx::core::Color sum_light;
+
+    for ( const auto& light : lights_ )
+    {
+        sum_light += light.calcColor( ctx.view_ray.getDir(),
+                                      ctx.intersection_point,
+                                      ctx.normal,
+                                      ctx.closest_object->getMaterial().color );
+    }
+
+    sum_light.clamp( 0, 255 );
+
+    return sum_light;
+}
+
+gfx::core::Color
+SceneManager::calcReflectedColor( IntersectionContext& ctx )
+{
+    gfx::core::Vector3f incident_dir = ctx.view_ray.getDir().normalize();
+    gfx::core::Vector3f reflect_dir =
+        incident_dir - ctx.normal * ( 2.0f * scalarMul( incident_dir, ctx.normal ) );
+    reflect_dir.normalize();
+
+    Ray reflected_ray( reflect_dir, ctx.intersection_point );
+
+    auto old_ray = ctx.view_ray;
+    ctx.view_ray = reflected_ray;
+
+    ctx.depth++;
+    gfx::core::Color color = calcRayColor( ctx );
+    ctx.depth--;
+
+    ctx.view_ray = old_ray;
+
+    return color;
+}
+
+gfx::core::Color
+SceneManager::calcColor( IntersectionContext& ctx )
+{
+    gfx::core::Color light_color = calcLightsColor( ctx );
+
+    float reflection_factor = ctx.closest_object->getMaterial().reflective_factor;
+    if ( reflection_factor > 0.0f )
+    {
+        gfx::core::Color reflected_color = reflection_factor * calcReflectedColor( ctx );
+
+        gfx::core::Color final_color = ( 1 - reflection_factor ) * light_color + reflected_color;
+
+        final_color.clamp( 0, 255 );
+
+        return final_color;
+    }
+
+    return light_color;
+}
+
+gfx::core::Color
+SceneManager::calcRayColor( IntersectionContext& ctx )
+{
+    if ( ctx.depth >= IntersectionContext::MaxDepth )
+    {
+        return ctx.background_color;
+    }
+
+    if ( findClosestIntersection( ctx ) )
+    {
+        return calcColor( ctx );
+    }
+
+    return ctx.background_color;
+}
+
+gfx::core::Color
+SceneManager::calcPixelColor( uint row, uint col, const gfx::core::Color& background_color )
+{
+    const Ray view_ray = camera_.emitRay( col, row );
+
+    IntersectionContext ctx( view_ray, background_color );
+
+    return calcRayColor( ctx );
+}
+
+} // namespace model
+} // namespace zemax
