@@ -36,7 +36,7 @@ Plane::calcRayIntersection( const Ray& ray ) const
     auto  n  = normal_;
     float t  = scalarMul( r0 - rp, n ) / scalarMul( a, n );
 
-    return ( t > 0 ) ? r0 + a * t : gfx::core::Vector3f::Nan;
+    return ( t < 0 ) ? gfx::core::Vector3f::Nan : r0 + a * t;
 }
 
 gfx::core::Vector3f

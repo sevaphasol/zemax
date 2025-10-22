@@ -1,4 +1,5 @@
 #include "zemax/model/sphere.hpp"
+#include "gfx/core/vector3.hpp"
 
 namespace zemax {
 namespace model {
@@ -35,7 +36,13 @@ Sphere::calcRayIntersection( const Ray& ray ) const
     float a_len = a.getLen();
     float b_len = b.getLen();
 
-    float cos_phi    = scalarMul( a, b ) / ( a_len * b_len );
+    float cos_phi = scalarMul( a, b ) / ( a_len * b_len );
+
+    if ( cos_phi < 0.0f )
+    {
+        return gfx::core::Vector3f::Nan;
+    }
+
     float cos_phi_sq = cos_phi * cos_phi;
 
     float b_len_sq  = b_len * b_len;
@@ -43,7 +50,7 @@ Sphere::calcRayIntersection( const Ray& ray ) const
 
     float r_sq = radius_ * radius_;
 
-    float t = -( b_cos_phi - sqrt( ( b_len_sq * ( cos_phi_sq - 1 ) ) + r_sq ) ) / a_len;
+    float t = ( -b_cos_phi + sqrt( ( b_len_sq * ( cos_phi_sq - 1 ) ) + r_sq ) ) / a_len;
 
     return ( t > 0 ) ? gfx::core::Vector3f::Nan : r0 + a * t;
 }

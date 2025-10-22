@@ -1,6 +1,7 @@
 #include "zemax/model/scene_manager.hpp"
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
+#include "zemax/model/aabb.hpp"
 #include "zemax/model/camera.hpp"
 #include "zemax/model/material.hpp"
 #include "zemax/model/plane.hpp"
@@ -43,10 +44,11 @@ SceneManager::addPlane( const Material&            material,
 }
 
 void
-SceneManager::addCube( const Material& material, const gfx::core::Vector3f& center, float side )
+SceneManager::addAABB( const Material&            material,
+                       const gfx::core::Vector3f& center,
+                       const gfx::core::Vector3f& bounds )
 {
-    assert( !"Not supported" );
-    // objects_.push_back( std::make_unique<Cube>( material, center, side ) );
+    objects_.push_back( std::make_unique<AABB>( material, center, bounds ) );
 }
 
 void
@@ -103,13 +105,34 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
     return sum_light;
 }
 
+// gfx::core::Color
+// SceneManager::calcRefractedColor( IntersectionContext& ctx )
+// {
+//     gfx::core::Vector3f incident_dir = ctx.view_ray.getDir().normalize();
+//     gfx::core::Vector3f refrated_dir =
+//         incident_dir - ctx.normal * ( 2.0f * scalarMul( incident_dir, ctx.normal ) );
+//     reflect_dir.normalize();
+//
+//     Ray reflected_ray( reflect_dir, ctx.intersection_point );
+//
+//     auto old_ray = ctx.view_ray;
+//     ctx.view_ray = reflected_ray;
+//
+//     ctx.depth++;
+//     gfx::core::Color color = calcRayColor( ctx );
+//     ctx.depth--;
+//
+//     ctx.view_ray = old_ray;
+//
+//     return color;
+// }
+
 gfx::core::Color
 SceneManager::calcReflectedColor( IntersectionContext& ctx )
 {
-    gfx::core::Vector3f incident_dir = ctx.view_ray.getDir().normalize();
     gfx::core::Vector3f reflect_dir =
-        incident_dir - ctx.normal * ( 2.0f * scalarMul( incident_dir, ctx.normal ) );
-    reflect_dir.normalize();
+        ctx.view_ray.getDir() -
+        ctx.normal * ( 2.0f * scalarMul( ctx.view_ray.getDir(), ctx.normal ) );
 
     Ray reflected_ray( reflect_dir, ctx.intersection_point );
 
@@ -128,21 +151,15 @@ SceneManager::calcReflectedColor( IntersectionContext& ctx )
 gfx::core::Color
 SceneManager::calcColor( IntersectionContext& ctx )
 {
-    gfx::core::Color light_color = calcLightsColor( ctx );
+    gfx::core::Color light_color     = calcLightsColor( ctx );
+    gfx::core::Color reflected_color = calcReflectedColor( ctx );
+    // gfx::core::Color refracted_color = calcRefractedColor( ctx );
 
-    float reflection_factor = ctx.closest_object->getMaterial().reflective_factor;
-    if ( reflection_factor > 0.0f )
-    {
-        gfx::core::Color reflected_color = reflection_factor * calcReflectedColor( ctx );
+    float reflection_factor = ctx.closest_object->getMaterial().reflection_factor;
+    float refraction_factor = ctx.closest_object->getMaterial().refraction_factor;
 
-        gfx::core::Color final_color = ( 1 - reflection_factor ) * light_color + reflected_color;
-
-        final_color.clamp( 0, 255 );
-
-        return final_color;
-    }
-
-    return light_color;
+    return ( 1 - reflection_factor - refraction_factor ) * light_color +
+           reflection_factor * reflected_color; // + refraction_factor * refracted_color;
 }
 
 gfx::core::Color

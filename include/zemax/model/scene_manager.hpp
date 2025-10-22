@@ -32,6 +32,11 @@ class SceneManager {
               const gfx::core::Vector3f& normal );
 
     void
+    addAABB( const Material&            material,
+             const gfx::core::Vector3f& center,
+             const gfx::core::Vector3f& bounds );
+
+    void
     addCube( const Material& material, const gfx::core::Vector3f& center, float side );
 
     gfx::core::Color

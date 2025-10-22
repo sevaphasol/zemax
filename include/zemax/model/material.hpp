@@ -8,14 +8,14 @@ namespace model {
 struct Material
 {
     Material( const gfx::core::Color& color ) : color( color ) {}
-    Material( const gfx::core::Color& color, float reflective_factor )
-        : color( color ), reflective_factor( reflective_factor )
+    Material( const gfx::core::Color& color, float reflection_factor )
+        : color( color ), reflection_factor( reflection_factor )
     {
     }
 
     gfx::core::Color color             = gfx::core::Color::Transparent;
-    float            refractive_factor = 0.0F;
-    float            reflective_factor = 0.0F;
+    float            refraction_factor = 0.0F;
+    float            reflection_factor = 0.0F;
 };
 
 } // namespace model

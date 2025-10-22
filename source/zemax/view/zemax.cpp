@@ -22,13 +22,17 @@ Zemax::Zemax()
 
     scene_manager_.addLight( gfx::core::Vector3f( -15, -5, 10 ), 0.2, 0.3, 0.5 );
     scene_manager_.addLight( gfx::core::Vector3f( 0, 3, 3 ), 0.2, 0.3, 0.5 );
-    scene_manager_.addLight( gfx::core::Vector3f( 0, 0, 0 ), 0.2, 0.3, 0.5 );
+    // scene_manager_.addLight( gfx::core::Vector3f( 0, 0, 0 ), 0.2, 0.3, 0.5 );
 
-    scene_manager_.addSphere( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
-                              gfx::core::Vector3f( -2, 2, 5 ),
-                              1.5 );
+    // scene_manager_.addSphere( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
+    //   gfx::core::Vector3f( -2, 2, 5 ),
+    //   1.5 );
 
-    scene_manager_.addSphere( model::Material( gfx::core::Color( 8, 255, 8 ) ),
+    scene_manager_.addAABB( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
+                            gfx::core::Vector3f( -2, 2, 5 ),
+                            gfx::core::Vector3f( 1, 1, 1 ) );
+
+    scene_manager_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
                               gfx::core::Vector3f( 2, 0, 5 ),
                               1.5 );
 
