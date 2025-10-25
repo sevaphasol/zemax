@@ -18,7 +18,7 @@ Ray
 Camera::emitRay( uint pixel_x, uint pixel_y ) const
 {
     float x3d = ( 2 * ( ( float( pixel_x ) + 0.5 ) / screen_width_ ) - 1 );
-    float y3d = ( 2 * ( ( float( pixel_y ) + 0.5 ) / screen_height_ ) - 1 ) * aspect_ratio_;
+    float y3d = ( -2 * ( ( float( pixel_y ) + 0.5 ) / screen_height_ ) + 1 ) * aspect_ratio_;
 
     gfx::core::Vector3f ray_dir = x3d * hor_ort_ + y3d * ver_ort_ + fwd_ort_;
 

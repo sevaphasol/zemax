@@ -5,7 +5,7 @@ namespace zemax {
 namespace model {
 
 Sphere::Sphere( const Material& material, const gfx::core::Vector3f& center, float radius )
-    : Primitive( material ), center_( center ), radius_( radius )
+    : Primitive( material ), center_( center ), radius_( radius ), radius_sq_( radius * radius )
 {
 }
 
@@ -24,35 +24,30 @@ Sphere::intersectRay( const Ray& ray ) const
 gfx::core::Vector3f
 Sphere::calcRayIntersection( const Ray& ray ) const
 {
-    if ( !intersectRay( ray ) )
+    gfx::core::Vector3f ro = ray.getBasePoint();
+    gfx::core::Vector3f rd = ray.getDir();
+    gfx::core::Vector3f oc = ro - center_;
+
+    float b = scalarMul( oc, rd );
+    float c = scalarMul( oc, oc ) - radius_sq_;
+
+    float h = b * b - c;
+
+    if ( h < 0.0f )
     {
         return gfx::core::Vector3f::Nan;
     }
 
-    gfx::core::Vector3f r0 = ray.getBasePoint();
-    gfx::core::Vector3f a  = ray.getDir();
-    gfx::core::Vector3f b  = r0 - center_;
+    h = sqrt( h );
 
-    float a_len = a.getLen();
-    float b_len = b.getLen();
+    float t = -b - h;
 
-    float cos_phi = scalarMul( a, b ) / ( a_len * b_len );
-
-    if ( cos_phi < 0.0f )
+    if ( t < 0.0f )
     {
         return gfx::core::Vector3f::Nan;
     }
 
-    float cos_phi_sq = cos_phi * cos_phi;
-
-    float b_len_sq  = b_len * b_len;
-    float b_cos_phi = b_len * cos_phi;
-
-    float r_sq = radius_ * radius_;
-
-    float t = ( -b_cos_phi + sqrt( ( b_len_sq * ( cos_phi_sq - 1 ) ) + r_sq ) ) / a_len;
-
-    return ( t > 0 ) ? gfx::core::Vector3f::Nan : r0 + a * t;
+    return ro + t * rd;
 }
 
 gfx::core::Vector3f

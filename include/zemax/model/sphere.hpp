@@ -26,6 +26,7 @@ class Sphere : public Primitive {
   private:
     gfx::core::Vector3f center_;
     float               radius_;
+    float               radius_sq_;
 };
 
 } // namespace model

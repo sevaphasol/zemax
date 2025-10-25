@@ -40,7 +40,7 @@ SceneManager::addPlane( const Material&            material,
                         const gfx::core::Vector3f& base_point,
                         const gfx::core::Vector3f& normal )
 {
-    objects_.push_back( std::make_unique<Plane>( material, base_point, normal ) );
+    // objects_.push_back( std::make_unique<Plane>( material, base_point, normal ) );
 }
 
 void
@@ -48,7 +48,7 @@ SceneManager::addAABB( const Material&            material,
                        const gfx::core::Vector3f& center,
                        const gfx::core::Vector3f& bounds )
 {
-    objects_.push_back( std::make_unique<AABB>( material, center, bounds ) );
+    // objects_.push_back( std::make_unique<AABB>( material, center, bounds ) );
 }
 
 void
@@ -105,28 +105,6 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
     return sum_light;
 }
 
-// gfx::core::Color
-// SceneManager::calcRefractedColor( IntersectionContext& ctx )
-// {
-//     gfx::core::Vector3f incident_dir = ctx.view_ray.getDir().normalize();
-//     gfx::core::Vector3f refrated_dir =
-//         incident_dir - ctx.normal * ( 2.0f * scalarMul( incident_dir, ctx.normal ) );
-//     reflect_dir.normalize();
-//
-//     Ray reflected_ray( reflect_dir, ctx.intersection_point );
-//
-//     auto old_ray = ctx.view_ray;
-//     ctx.view_ray = reflected_ray;
-//
-//     ctx.depth++;
-//     gfx::core::Color color = calcRayColor( ctx );
-//     ctx.depth--;
-//
-//     ctx.view_ray = old_ray;
-//
-//     return color;
-// }
-
 gfx::core::Color
 SceneManager::calcReflectedColor( IntersectionContext& ctx )
 {
@@ -153,13 +131,12 @@ SceneManager::calcColor( IntersectionContext& ctx )
 {
     gfx::core::Color light_color     = calcLightsColor( ctx );
     gfx::core::Color reflected_color = calcReflectedColor( ctx );
-    // gfx::core::Color refracted_color = calcRefractedColor( ctx );
 
     float reflection_factor = ctx.closest_object->getMaterial().reflection_factor;
     float refraction_factor = ctx.closest_object->getMaterial().refraction_factor;
 
     return ( 1 - reflection_factor - refraction_factor ) * light_color +
-           reflection_factor * reflected_color; // + refraction_factor * refracted_color;
+           reflection_factor * reflected_color;
 }
 
 gfx::core::Color

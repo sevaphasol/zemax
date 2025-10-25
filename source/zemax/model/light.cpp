@@ -32,7 +32,7 @@ Light::calcColor( const gfx::core::Vector3f& ray,
     gfx::core::Color diffuse_light  = calcDiffuseLight( light_ray, normal );
     gfx::core::Color glare_light    = calcGlareLight( light_ray, normal, ray );
 
-    return embedded_light + diffuse_light + glare_light + color;
+    return embedded_light + diffuse_light + glare_light;
 }
 
 gfx::core::Color
