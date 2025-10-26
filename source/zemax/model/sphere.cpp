@@ -1,32 +1,23 @@
 #include "zemax/model/sphere.hpp"
+#include "gfx/core/vector2.hpp"
 #include "gfx/core/vector3.hpp"
+#include <optional>
 
 namespace zemax {
 namespace model {
 
 Sphere::Sphere( const Material& material, const gfx::core::Vector3f& center, float radius )
-    : Primitive( material ), center_( center ), radius_( radius ), radius_sq_( radius * radius )
+    : Primitive( material, center ), radius_( radius ), radius_sq_( radius * radius )
 {
 }
 
-void
-Sphere::move( const gfx::core::Vector3f& delta )
-{
-    center_ += delta;
-}
-
-bool
-Sphere::intersectRay( const Ray& ray ) const
-{
-    return ray.calcDistance( center_ ) <= radius_;
-}
-
-gfx::core::Vector3f
+std::optional<Primitive::IntersectionInfo>
 Sphere::calcRayIntersection( const Ray& ray ) const
 {
     gfx::core::Vector3f ro = ray.getBasePoint();
     gfx::core::Vector3f rd = ray.getDir();
-    gfx::core::Vector3f oc = ro - center_;
+    gfx::core::Vector3f ce = getOrigin();
+    gfx::core::Vector3f oc = ro - ce;
 
     float b = scalarMul( oc, rd );
     float c = scalarMul( oc, oc ) - radius_sq_;
@@ -35,25 +26,34 @@ Sphere::calcRayIntersection( const Ray& ray ) const
 
     if ( h < 0.0f )
     {
-        return gfx::core::Vector3f::Nan;
+        return std::nullopt;
     }
 
     h = sqrt( h );
 
     float t = -b - h;
 
-    if ( t < 0.0f )
-    {
-        return gfx::core::Vector3f::Nan;
-    }
+    IntersectionInfo info;
 
-    return ro + t * rd;
+    info.close_distance = -b - h;
+    info.far_distance   = -b + h;
+    info.inside_object  = info.close_distance < 0.0f;
+    info.normal         = std::nullopt;
+
+    return info;
 }
 
 gfx::core::Vector3f
-Sphere::normal( const gfx::core::Vector3f& point ) const
+Sphere::calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const
 {
-    return point - center_;
+    gfx::core::Vector3f normal = ( point - getOrigin() ).normalize();
+
+    if ( inside_object )
+    {
+        normal = -normal;
+    }
+
+    return normal;
 }
 
 } // namespace model

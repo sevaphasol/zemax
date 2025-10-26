@@ -8,6 +8,7 @@
 #include "zemax/model/primitive.hpp"
 #include "zemax/model/sphere.hpp"
 #include <cassert>
+#include <iostream>
 #include <memory>
 
 namespace zemax {
@@ -40,7 +41,7 @@ SceneManager::addPlane( const Material&            material,
                         const gfx::core::Vector3f& base_point,
                         const gfx::core::Vector3f& normal )
 {
-    // objects_.push_back( std::make_unique<Plane>( material, base_point, normal ) );
+    objects_.push_back( std::make_unique<Plane>( material, base_point, normal ) );
 }
 
 void
@@ -48,7 +49,7 @@ SceneManager::addAABB( const Material&            material,
                        const gfx::core::Vector3f& center,
                        const gfx::core::Vector3f& bounds )
 {
-    // objects_.push_back( std::make_unique<AABB>( material, center, bounds ) );
+    objects_.push_back( std::make_unique<AABB>( material, center, bounds ) );
 }
 
 void
@@ -68,19 +69,33 @@ SceneManager::findClosestIntersection( IntersectionContext& ctx )
 
     for ( auto& object : objects_ )
     {
-        const gfx::core::Vector3f point = object->calcRayIntersection( ctx.view_ray );
+        auto info = object->calcRayIntersection( ctx.view_ray );
 
-        if ( point.valid() )
+        if ( !info.has_value() )
         {
-            float distance = ( point - ctx.view_ray.getBasePoint() ).getLen();
-            if ( distance > 0 && distance < min_distance )
-            {
-                min_distance           = distance;
-                ctx.closest_object     = object.get();
-                ctx.intersection_point = point;
-                ctx.normal             = object->normal( point );
-                hit                    = true;
-            }
+            continue;
+        }
+
+        auto ro = ctx.view_ray.getBasePoint();
+        auto rd = ctx.view_ray.getDir();
+
+        if ( info->inside_object )
+        {
+            continue;
+        }
+
+        const gfx::core::Vector3f point = ro + info->close_distance * rd;
+
+        float distance = ( point - ctx.view_ray.getBasePoint() ).getLen();
+        if ( distance > 0 && distance < min_distance )
+        {
+            min_distance           = distance;
+            ctx.closest_object     = object.get();
+            ctx.intersection_point = point;
+            ctx.normal =
+                ( info->normal.has_value() ? info->normal.value()
+                                           : object->calcNormal( point, info->inside_object ) );
+            hit = true;
         }
     }
 
@@ -108,20 +123,22 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
 gfx::core::Color
 SceneManager::calcReflectedColor( IntersectionContext& ctx )
 {
-    gfx::core::Vector3f reflect_dir =
-        ctx.view_ray.getDir() -
-        ctx.normal * ( 2.0f * scalarMul( ctx.view_ray.getDir(), ctx.normal ) );
+    // // std::cerr << ctx.normal.x << " " << ctx.normal.y << " " << ctx.normal.z << std::endl;
 
-    Ray reflected_ray( reflect_dir, ctx.intersection_point );
+    gfx::core::Vector3f reflect_dir = ctx.view_ray.getDir().calcReflected(
+        ctx.normal ); // ctx.view_ray.getDir().calcReflected( ctx.normal );
+                      // ctx.view_ray.getDir() -
+                      // ctx.normal * ( scalarMul( ctx.view_ray.getDir(), ctx.normal ) * 2.0f );
 
-    auto old_ray = ctx.view_ray;
+    Ray reflected_ray( reflect_dir, ctx.intersection_point + 1e-4f * ctx.normal );
+
+    auto old_ctx = ctx;
+
     ctx.view_ray = reflected_ray;
-
     ctx.depth++;
     gfx::core::Color color = calcRayColor( ctx );
-    ctx.depth--;
 
-    ctx.view_ray = old_ray;
+    ctx = old_ctx;
 
     return color;
 }

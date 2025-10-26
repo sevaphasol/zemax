@@ -56,10 +56,33 @@ class SceneManager {
         {
         }
 
+        // IntersectionContext( const IntersectionContext& that )
+        //     : background_color( that.background_color )
+        // {
+        //     this->view_ray           = that.view_ray;
+        //     this->intersection_point = that.intersection_point;
+        //     this->normal             = that.normal;
+        //     this->closest_object     = that.closest_object;
+        //     this->depth              = that.depth;
+        // }
+
+        IntersectionContext&
+        operator=( const IntersectionContext& that )
+        {
+            this->view_ray           = that.view_ray;
+            this->intersection_point = that.intersection_point;
+            this->normal             = that.normal;
+            this->background_color   = that.background_color;
+            this->closest_object     = that.closest_object;
+            this->depth              = that.depth;
+
+            return *this;
+        }
+
         Ray                     view_ray;
         gfx::core::Vector3f     intersection_point;
         gfx::core::Vector3f     normal;
-        const gfx::core::Color& background_color;
+        gfx::core::Color        background_color;
         Primitive*              closest_object = nullptr;
         size_t                  depth          = 0;
         static constexpr size_t MaxDepth       = 4;

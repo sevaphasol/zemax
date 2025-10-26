@@ -2,6 +2,8 @@
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
 
+#include <iostream>
+
 namespace zemax {
 namespace model {
 
@@ -26,11 +28,19 @@ Light::calcColor( const gfx::core::Vector3f& ray,
                   const gfx::core::Vector3f& normal,
                   const gfx::core::Color&    color ) const
 {
-    gfx::core::Vector3f light_ray = point - pos_;
+    gfx::core::Vector3f light_ray = pos_ - point;
 
     gfx::core::Color embedded_light = calcEmbeddedLight( color );
     gfx::core::Color diffuse_light  = calcDiffuseLight( light_ray, normal );
     gfx::core::Color glare_light    = calcGlareLight( light_ray, normal, ray );
+
+    // std::cerr << "normal = " << normal.x << " " << normal.y << " " << normal.z << std::endl;
+    // std::cerr << "embedded_light = " << int( embedded_light.r ) << " " << int( embedded_light.g )
+    //   << " " << int( embedded_light.b ) << std::endl;
+    // std::cerr << "diffuse_light = " << int( diffuse_light.r ) << " " << int( diffuse_light.g )
+    //   << " " << int( diffuse_light.b ) << std::endl;
+    // std::cerr << "glare_light = " << int( glare_light.r ) << " " << int( glare_light.g ) << " "
+    //   << int( glare_light.b ) << std::endl;
 
     return embedded_light + diffuse_light + glare_light;
 }
@@ -45,8 +55,7 @@ float
 Light::calcDiffuseLight( const gfx::core::Vector3f& light_ray,
                          const gfx::core::Vector3f& normal ) const
 {
-    float cos       = -calcCos( light_ray, normal );
-    float intensity = diffuse_intensity_ * cos;
+    float intensity = diffuse_intensity_ * calcCos( light_ray, normal );
 
     return std::max( 0.0f, intensity * 255 );
 }
@@ -58,8 +67,21 @@ Light::calcGlareLight( const gfx::core::Vector3f& light_ray,
 {
     gfx::core::Vector3f reflected_ray = light_ray.calcReflected( normal );
 
-    float cos       = -calcCos( view_ray, reflected_ray );
+    // std::cerr << "view_ray = " << light_ray.x << " " << light_ray.y << " " << light_ray.z
+    //   << std::endl;
+    // std::cerr << "light_ray = " << light_ray.x << " " << light_ray.y << " " << light_ray.z
+    //   << std::endl;
+    // std::cerr << "normal = " << normal.x << " " << normal.y << " " << normal.z << std::endl;
+    // std::cerr << "reflected_ray = " << reflected_ray.x << " " << reflected_ray.y << " "
+    //   << reflected_ray.z << std::endl;
+
+    float cos = calcCos( view_ray, reflected_ray );
+
+    // std::cerr << "cos = " << cos << std::endl;
+
     float intensity = glare_intensity_ * float( std::pow( cos, 11 ) );
+
+    // std::cerr << "intensity = " << intensity << std::endl;
 
     return std::max( 0.0f, intensity * 255 );
 }
