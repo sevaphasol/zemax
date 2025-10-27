@@ -9,7 +9,7 @@
 #include "gfx/ui/scrollbar.hpp"
 #include "gfx/ui/widget.hpp"
 #include "zemax/config.hpp"
-#include "zemax/model/rendering/scene_manager.hpp"
+#include "zemax/model/rendering/scenes_manager.hpp"
 #include <iostream>
 #include <memory>
 
@@ -18,8 +18,8 @@ namespace view {
 
 class ControlPanel : public gfx::ui::Widget {
   public:
-    explicit ControlPanel( zemax::model::SceneManager& scene_manager )
-        : scene_manager_( scene_manager ), camera_( scene_manager_.getCamera() )
+    explicit ControlPanel( zemax::model::ScenesManager& scenes_manager )
+        : scenes_manager_( scenes_manager ), camera_( scenes_manager.getActiveScene().getCamera() )
     {
         loadFont( Config::ControlPanel::Button::FontName );
 
@@ -59,63 +59,73 @@ class ControlPanel : public gfx::ui::Widget {
     {
         if ( isPressed( MoveLeft ) )
         {
-            scene_manager_.getCamera().move( { -Config::Camera::MoveFactor, 0.0f, 0.0f } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().move(
+                { -Config::Camera::MoveFactor, 0.0f, 0.0f } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( MoveRight ) )
         {
 
-            scene_manager_.getCamera().move( { Config::Camera::MoveFactor, 0.0f, 0.0f } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().move(
+                { Config::Camera::MoveFactor, 0.0f, 0.0f } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( MoveUp ) )
         {
 
-            scene_manager_.getCamera().move( { 0.0f, Config::Camera::MoveFactor, 0.0f } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().move(
+                { 0.0f, Config::Camera::MoveFactor, 0.0f } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( MoveDown ) )
         {
-            scene_manager_.getCamera().move( { 0.0f, -Config::Camera::MoveFactor, 0.0f } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().move(
+                { 0.0f, -Config::Camera::MoveFactor, 0.0f } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( MoveForward ) )
         {
 
-            scene_manager_.getCamera().move( { 0.0f, 0.0f, -Config::Camera::MoveFactor } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().move(
+                { 0.0f, 0.0f, -Config::Camera::MoveFactor } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( MoveBackward ) )
         {
-            scene_manager_.getCamera().move( { 0.0f, 0.0f, Config::Camera::MoveFactor } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().move(
+                { 0.0f, 0.0f, Config::Camera::MoveFactor } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( RotateLeft ) )
         {
-            scene_manager_.getCamera().rotate( { Config::Camera::RotateFactor, 0.0f } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().rotate(
+                { Config::Camera::RotateFactor, 0.0f } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( RotateRight ) )
         {
-            scene_manager_.getCamera().rotate( { -Config::Camera::RotateFactor, 0.0f } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().rotate(
+                { -Config::Camera::RotateFactor, 0.0f } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( RotateUp ) )
         {
-            scene_manager_.getCamera().rotate( { 0.0f, -Config::Camera::RotateFactor } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().rotate(
+                { 0.0f, -Config::Camera::RotateFactor } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isPressed( RotateDown ) )
         {
-            scene_manager_.getCamera().rotate( { 0.0f, Config::Camera::RotateFactor } );
-            scene_manager_.needUpdate() = true;
+            scenes_manager_.getActiveScene().getCamera().rotate(
+                { 0.0f, Config::Camera::RotateFactor } );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
         if ( isScrolled( ChangeScene ) )
         {
-            std::cerr << dynamic_cast<gfx::ui::ScrollBar*>(
-                             children_[ButtonCode::ChangeScene].get() )
-                             ->getScrollFactor()
-                      << std::endl;
+            scenes_manager_.onScroll(
+                dynamic_cast<gfx::ui::ScrollBar*>( children_[ButtonCode::ChangeScene].get() )
+                    ->getScrollFactor() );
+            scenes_manager_.getActiveScene().needUpdate() = true;
         }
 
         return false;
@@ -181,8 +191,8 @@ class ControlPanel : public gfx::ui::Widget {
     }
 
   private:
-    zemax::model::SceneManager& scene_manager_;
-    zemax::model::Camera&       camera_;
+    zemax::model::ScenesManager& scenes_manager_;
+    zemax::model::Camera&        camera_;
 
     gfx::core::RectangleShape border_;
     gfx::core::Font           labels_font_;
