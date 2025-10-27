@@ -1,4 +1,4 @@
-#include "zemax/model/ray.hpp"
+#include "zemax/model/rendering/ray.hpp"
 #include "gfx/core/vector3.hpp"
 
 namespace zemax {

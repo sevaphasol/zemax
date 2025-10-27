@@ -1,17 +1,16 @@
 #pragma once
 
 #include "gfx/core/vector3.hpp"
-#include "zemax/model/primitive.hpp"
-#include "zemax/model/ray.hpp"
+#include "zemax/model/primitives/primitive.hpp"
+#include "zemax/model/rendering/ray.hpp"
+#include <optional>
 
 namespace zemax {
 namespace model {
 
-class Plane : public Primitive {
+class Sphere : public Primitive {
   public:
-    Plane( const Material&            material,
-           const gfx::core::Vector3f& base_point,
-           const gfx::core::Vector3f& normal );
+    Sphere( const Material& material, const gfx::core::Vector3f& center, float radius );
 
     virtual std::optional<Primitive::IntersectionInfo>
     calcRayIntersection( const Ray& ray ) const override final;
@@ -20,7 +19,8 @@ class Plane : public Primitive {
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
   private:
-    gfx::core::Vector3f normal_;
+    float radius_;
+    float radius_sq_;
 };
 
 } // namespace model

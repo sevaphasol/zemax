@@ -1,0 +1,235 @@
+// #pragma once
+//
+// #include "gfx/core/color.hpp"
+// #include "gfx/core/primitive_type.hpp"
+// #include "gfx/core/vector2.hpp"
+// #include "gfx/core/vector3.hpp"
+// #include "gfx/core/vertex.hpp"
+// #include "gfx/core/window.hpp"
+//
+// #include "gfx/ui/widget.hpp"
+//
+// #include "zemax/model/rendering/scene_manager.hpp"
+//
+// namespace zemax {
+// namespace view {
+//
+// class Scene : public gfx::ui::Widget {
+//   public:
+//     ~Scene() = default;
+//
+//     explicit Scene( const gfx::core::Vector2f& pos,
+//                     const gfx::core::Vector2f& size,
+//                     const gfx::core::Color&    background_color,
+//                     const gfx::core::Vector3f& camera_pos )
+//         : Widget( pos, size ),
+//           model_( camera_pos, size.x, size.y ),
+//           background_color_( background_color ),
+//           pixels_( size.x * size.y )
+//     {
+//         model_.addLight( gfx::core::Vector3f( 3, 3, 3 ), 1.0, 0.3, 0.9 );
+//         model_.addLight( gfx::core::Vector3f( 0, 0, -5 ), 0.2, 0.3, 0.9 );
+//
+//         model_.addAABB( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
+//                         gfx::core::Vector3f( -2, 1, -8 ),
+//                         gfx::core::Vector3f( 0.75, 0.75, 0.75 ) );
+//
+//         model_.addAABB( model::Material( gfx::core::Color( 8, 8, 8 ), 0.5f ),
+//                         gfx::core::Vector3f( -1, 0.5, -5 ),
+//                         gfx::core::Vector3f( 0.25, 0.25, 0.25 ) );
+//
+//         model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
+//                           gfx::core::Vector3f( 2, 0, -7 ),
+//                           1.5 );
+//
+//         model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
+//                           gfx::core::Vector3f( -2, 1, -1 ),
+//                           1.5 );
+//
+//         model_.addPlane( model::Material( gfx::core::Color( 128, 8, 127 ), 0.5f ),
+//                          gfx::core::Vector3f( 0, -1.75, 0 ),
+//                          gfx::core::Vector3f( 0, 1, 0 ) );
+//     }
+//
+//     model::SceneManager&
+//     getModel()
+//     {
+//         return model_;
+//     }
+//
+//     virtual bool
+//     onIdleSelf( const gfx::core::Event::IdleEvent& event ) override final
+//     {
+//         if ( model_.needUpdate() )
+//         {
+//             update();
+//             model_.needUpdate() = false;
+//         }
+//
+//         return false;
+//     }
+//
+//   private:
+//     void
+//     update()
+//     {
+//         const size_t w = getSize().x;
+//         const size_t h = getSize().y;
+//
+//         for ( size_t row = 0; row < h; row++ )
+//         {
+//             for ( size_t col = 0; col < w; col++ )
+//             {
+//                 gfx::core::Vector2f pos( col, row );
+//                 gfx::core::Color    color = model_.calcPixelColor( row, col, background_color_ );
+//
+//                 pixels_[row * w + col] = gfx::core::Vertex( pos, color );
+//             }
+//         }
+//     }
+//
+//     void
+//     drawSelf( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+//     {
+//         window.draw( pixels_.data(), pixels_.size(), gfx::core::PrimitiveType::Points, transform
+//         );
+//     }
+//
+//   private:
+//     model::SceneManager model_;
+//
+//     gfx::core::Color background_color_;
+//
+//     std::vector<gfx::core::Vertex> pixels_;
+// };
+//
+// } // namespace view
+// } // namespace zemax
+
+#pragma once
+
+#include "gfx/core/color.hpp"
+#include "gfx/core/primitive_type.hpp"
+#include "gfx/core/vector2.hpp"
+#include "gfx/core/vector3.hpp"
+#include "gfx/core/vertex.hpp"
+#include "gfx/core/window.hpp"
+
+#include "gfx/ui/widget.hpp"
+
+#include "zemax/model/rendering/scene_manager.hpp"
+
+#include <algorithm>
+#include <thread>
+#include <vector>
+
+namespace zemax {
+namespace view {
+
+class Scene : public gfx::ui::Widget {
+  public:
+    ~Scene() = default;
+
+    explicit Scene( const gfx::core::Vector2f& pos,
+                    const gfx::core::Vector2f& size,
+                    const gfx::core::Color&    background_color,
+                    const gfx::core::Vector3f& camera_pos )
+        : Widget( pos, size ),
+          model_( camera_pos, size.x, size.y ),
+          background_color_( background_color ),
+          pixels_( size.x * size.y )
+    {
+        model_.addLight( gfx::core::Vector3f( 3, 3, 3 ), 1.0, 0.3, 0.9 );
+        model_.addLight( gfx::core::Vector3f( 0, 0, -5 ), 0.2, 0.3, 0.9 );
+
+        model_.addAABB( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
+                        gfx::core::Vector3f( -2, 1, -8 ),
+                        gfx::core::Vector3f( 0.75, 0.75, 0.75 ) );
+
+        model_.addAABB( model::Material( gfx::core::Color( 8, 8, 8 ), 0.5f ),
+                        gfx::core::Vector3f( -1, 0.5, -5 ),
+                        gfx::core::Vector3f( 0.25, 0.25, 0.25 ) );
+
+        model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
+                          gfx::core::Vector3f( 2, 0, -7 ),
+                          1.5 );
+
+        model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
+                          gfx::core::Vector3f( -2, 1, -1 ),
+                          1.5 );
+
+        model_.addPlane( model::Material( gfx::core::Color( 128, 8, 127 ), 0.5f ),
+                         gfx::core::Vector3f( 0, -1.75, 0 ),
+                         gfx::core::Vector3f( 0, 1, 0 ) );
+    }
+
+    model::SceneManager&
+    getModel()
+    {
+        return model_;
+    }
+
+    virtual bool
+    onIdleSelf( const gfx::core::Event::IdleEvent& event ) override final
+    {
+        if ( model_.needUpdate() )
+        {
+            update();
+            model_.needUpdate() = false;
+        }
+
+        return false;
+    }
+
+  private:
+    void
+    update()
+    {
+        const size_t w = getSize().x;
+        const size_t h = getSize().y;
+
+        constexpr size_t         num_threads     = 16;
+        const size_t             rows_per_thread = h / num_threads;
+        std::vector<std::thread> workers;
+        workers.reserve( num_threads );
+
+        for ( size_t t = 0; t < num_threads; ++t )
+        {
+            const size_t start_row = t * rows_per_thread;
+            const size_t end_row   = ( t == num_threads - 1 ) ? h : ( t + 1 ) * rows_per_thread;
+
+            workers.emplace_back( [this, w, start_row, end_row]() {
+                for ( size_t row = start_row; row < end_row; ++row )
+                {
+                    for ( size_t col = 0; col < w; ++col )
+                    {
+                        gfx::core::Vector2f pos( static_cast<float>( col ),
+                                                 static_cast<float>( row ) );
+                        gfx::core::Color    color =
+                            model_.calcPixelColor( row, col, background_color_ );
+                        pixels_[row * w + col] = gfx::core::Vertex( pos, color );
+                    }
+                }
+            } );
+        }
+
+        for ( auto& worker : workers )
+        {
+            worker.join();
+        }
+    }
+
+    void
+    drawSelf( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+    {
+        window.draw( pixels_.data(), pixels_.size(), gfx::core::PrimitiveType::Points, transform );
+    }
+
+  private:
+    model::SceneManager            model_;
+    gfx::core::Color               background_color_;
+    std::vector<gfx::core::Vertex> pixels_;
+};
+
+} // namespace view
+} // namespace zemax

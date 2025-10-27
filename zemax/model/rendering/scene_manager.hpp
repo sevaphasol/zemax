@@ -2,11 +2,11 @@
 
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
-#include "zemax/model/camera.hpp"
-#include "zemax/model/light.hpp"
-#include "zemax/model/material.hpp"
-#include "zemax/model/primitive.hpp"
-#include "zemax/model/ray.hpp"
+#include "zemax/model/primitives/material.hpp"
+#include "zemax/model/primitives/primitive.hpp"
+#include "zemax/model/rendering/camera.hpp"
+#include "zemax/model/rendering/light.hpp"
+#include "zemax/model/rendering/ray.hpp"
 #include <memory>
 #include <vector>
 
@@ -16,6 +16,18 @@ namespace model {
 class SceneManager {
   public:
     SceneManager( const gfx::core::Vector3f& camera_pos, float screen_width, float screen_height );
+
+    bool&
+    needUpdate()
+    {
+        return need_update_;
+    }
+
+    bool
+    needUpdate() const
+    {
+        return need_update_;
+    }
 
     void
     addLight( gfx::core::Vector3f pos,
@@ -108,6 +120,8 @@ class SceneManager {
     findClosestIntersection( IntersectionContext& ctx );
 
   private:
+    bool need_update_ = true;
+
     std::vector<std::unique_ptr<Primitive>> objects_;
     std::vector<Light>                      lights_;
     Camera                                  camera_;

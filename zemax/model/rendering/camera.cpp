@@ -1,4 +1,4 @@
-#include "zemax/model/camera.hpp"
+#include "zemax/model/rendering/camera.hpp"
 
 namespace zemax {
 namespace model {
@@ -23,6 +23,32 @@ Camera::emitRay( uint pixel_x, uint pixel_y ) const
     gfx::core::Vector3f ray_dir = x3d * hor_ort_ + y3d * ver_ort_ + fwd_ort_;
 
     return Ray( ray_dir, pos_ );
+}
+
+void
+Camera::move( const gfx::core::Vector3f& delta )
+{
+    pos_ += ( delta.x * hor_ort_ + delta.y * ver_ort_ - delta.z * fwd_ort_ );
+}
+
+void
+Camera::rotate( const gfx::core::Vector2f& delta )
+{
+    rotate( delta.x, hor_ort_ );
+    rotate( delta.y, ver_ort_ );
+}
+
+void
+Camera::rotate( float angle, gfx::core::Vector3f& ort )
+{
+    float cos_angle = std::cos( angle );
+    float sin_angle = std::sin( angle );
+
+    gfx::core::Vector3f old_fwd_ort = fwd_ort_;
+    gfx::core::Vector3f old_ort     = ort;
+
+    fwd_ort_ = old_fwd_ort * cos_angle - old_ort * sin_angle;
+    ort      = old_fwd_ort * sin_angle + old_ort * cos_angle;
 }
 
 } // namespace model

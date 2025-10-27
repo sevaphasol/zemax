@@ -1,7 +1,8 @@
 #pragma once
 
+#include "gfx/core/vector2.hpp"
 #include "gfx/core/vector3.hpp"
-#include "zemax/model/ray.hpp"
+#include "zemax/model/rendering/ray.hpp"
 
 namespace zemax {
 namespace model {
@@ -10,32 +11,24 @@ class Camera {
   public:
     Camera( const gfx::core::Vector3f& pos, float screen_width, float screen_height );
 
-    Ray
-    emitRay( uint pixel_x, uint pixel_y ) const;
-
     gfx::core::Vector3f&
     getPos()
     {
         return pos_;
     }
 
-    gfx::core::Vector3f&
-    getHorOrt()
-    {
-        return hor_ort_;
-    }
+    Ray
+    emitRay( uint pixel_x, uint pixel_y ) const;
 
-    gfx::core::Vector3f&
-    getVerOrt()
-    {
-        return ver_ort_;
-    }
+    void
+    move( const gfx::core::Vector3f& delta );
 
-    gfx::core::Vector3f&
-    getFwdOrt()
-    {
-        return fwd_ort_;
-    }
+    void
+    rotate( const gfx::core::Vector2f& delta );
+
+  private:
+    void
+    rotate( float angle, gfx::core::Vector3f& ort );
 
   private:
     gfx::core::Vector3f pos_;

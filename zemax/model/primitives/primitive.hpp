@@ -2,8 +2,8 @@
 
 #include "gfx/core/vector2.hpp"
 #include "gfx/core/vector3.hpp"
-#include "zemax/model/material.hpp"
-#include "zemax/model/ray.hpp"
+#include "zemax/model/primitives/material.hpp"
+#include "zemax/model/rendering/ray.hpp"
 #include <optional>
 
 namespace zemax {

@@ -1,6 +1,6 @@
-#include "zemax/model/aabb.hpp"
+#include "zemax/model/primitives/impls/aabb.hpp"
 #include "gfx/core/vector3.hpp"
-#include "zemax/model/primitive.hpp"
+#include "zemax/model/primitives/primitive.hpp"
 #include <optional>
 
 namespace zemax {

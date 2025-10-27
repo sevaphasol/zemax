@@ -6,12 +6,12 @@ set( CMAKE_CXX_STANDARD_REQUIRED ON )
 set( CMAKE_EXPORT_COMPILE_COMMANDS ON )
 
 file( GLOB_RECURSE REACTOR_SOURCES CONFIGURE_DEPENDS
-	${CMAKE_CURRENT_SOURCE_DIR}/source/zemax/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/zemax/*.cpp
 )
 
 add_executable( zemax ${REACTOR_SOURCES} )
 target_include_directories( zemax PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/include
+	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 add_subdirectory( gfxlib )

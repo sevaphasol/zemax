@@ -1,4 +1,4 @@
-#include "zemax/model/plane.hpp"
+#include "zemax/model/primitives/impls/plane.hpp"
 #include "gfx/core/vector3.hpp"
 
 namespace zemax {

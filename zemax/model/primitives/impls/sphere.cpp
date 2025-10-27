@@ -1,4 +1,4 @@
-#include "zemax/model/sphere.hpp"
+#include "zemax/model/primitives/impls/sphere.hpp"
 #include "gfx/core/vector2.hpp"
 #include "gfx/core/vector3.hpp"
 #include <optional>

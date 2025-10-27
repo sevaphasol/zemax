@@ -1,4 +1,4 @@
-#include "zemax/model/light.hpp"
+#include "zemax/model/rendering/light.hpp"
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
 
