@@ -6,9 +6,10 @@
 #include "gfx/core/vector2.hpp"
 #include "gfx/core/window.hpp"
 #include "gfx/ui/button.hpp"
+#include "gfx/ui/container_widget.hpp"
+#include "gfx/ui/scrollable_buttons_widget.hpp"
 #include "gfx/ui/scrollbar.hpp"
 #include "gfx/ui/widget.hpp"
-#include "gfx/ui/widget_container.hpp"
 #include "zemax/config.hpp"
 #include "zemax/model/rendering/scenes_manager.hpp"
 #include <iostream>
@@ -17,7 +18,7 @@
 namespace zemax {
 namespace view {
 
-class ControlPanel : public gfx::ui::WidgetVectorContainer {
+class ControlPanel : public gfx::ui::VectorContainerWidget {
   public:
     explicit ControlPanel( zemax::model::ScenesManager& scenes_manager )
         : scenes_manager_( scenes_manager ), camera_( scenes_manager.getActiveScene().getCamera() )
@@ -53,6 +54,33 @@ class ControlPanel : public gfx::ui::WidgetVectorContainer {
         setupButton( Config::ControlPanel::Button::RtD::Position,
                      Config::ControlPanel::Button::RtD::Title );
         setupScrollBar( Config::ControlPanel::ScrollBar::Position );
+
+        addChild( std::make_unique<gfx::ui::ScrollableButtonsWidget>( 150, 450, 125, 200 ) );
+
+        children_[ObjectsInfo]->parent_ = this;
+
+        dynamic_cast<gfx::ui::ScrollableButtonsWidget*>( children_[ObjectsInfo].get() )
+            ->addButton( std::make_unique<gfx::ui::Button>(
+                gfx::core::Vector2f( 25, 0 ),
+                gfx::core::Vector2f( Config::ControlPanel::Button::Size.x, 200 ),
+                Config::ControlPanel::Button::DefaultColor,
+                Config::ControlPanel::Button::HoveredColor,
+                Config::ControlPanel::Button::PressedColor,
+                labels_font_,
+                "TestBtn1",
+                Config::ControlPanel::Button::FontColor,
+                Config::ControlPanel::Button::FontSize ) );
+        dynamic_cast<gfx::ui::ScrollableButtonsWidget*>( children_[ObjectsInfo].get() )
+            ->addButton( std::make_unique<gfx::ui::Button>(
+                gfx::core::Vector2f( 25, 0 ),
+                gfx::core::Vector2f( Config::ControlPanel::Button::Size.x, 200 ),
+                Config::ControlPanel::Button::DefaultColor,
+                Config::ControlPanel::Button::HoveredColor,
+                Config::ControlPanel::Button::PressedColor,
+                labels_font_,
+                "TestBtn2",
+                Config::ControlPanel::Button::FontColor,
+                Config::ControlPanel::Button::FontSize ) );
     }
 
     virtual bool
@@ -147,6 +175,7 @@ class ControlPanel : public gfx::ui::WidgetVectorContainer {
         RotateUp     = 8,
         RotateDown   = 9,
         ChangeScene  = 10,
+        ObjectsInfo  = 11,
     };
 
     void

@@ -9,7 +9,7 @@
 
 #include "gfx/ui/widget.hpp"
 
-#include "gfx/ui/widget_container.hpp"
+#include "gfx/ui/container_widget.hpp"
 #include "zemax/model/rendering/scene_manager.hpp"
 #include "zemax/model/rendering/scenes_manager.hpp"
 
@@ -19,7 +19,7 @@
 namespace zemax {
 namespace view {
 
-class Scene : public gfx::ui::WidgetVectorContainer {
+class Scene : public gfx::ui::VectorContainerWidget {
   public:
     ~Scene() = default;
 
@@ -27,7 +27,7 @@ class Scene : public gfx::ui::WidgetVectorContainer {
                     const gfx::core::Vector2f& size,
                     const gfx::core::Color&    background_color,
                     const gfx::core::Vector3f& camera_pos )
-        : gfx::ui::WidgetVectorContainer( pos, size ),
+        : gfx::ui::VectorContainerWidget( pos, size ),
           background_color_( background_color ),
           pixels_( size.x * size.y )
     {
