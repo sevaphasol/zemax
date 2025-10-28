@@ -9,6 +9,7 @@
 
 #include "gfx/ui/widget.hpp"
 
+#include "gfx/ui/widget_container.hpp"
 #include "zemax/model/rendering/scene_manager.hpp"
 #include "zemax/model/rendering/scenes_manager.hpp"
 
@@ -18,7 +19,7 @@
 namespace zemax {
 namespace view {
 
-class Scene : public gfx::ui::Widget {
+class Scene : public gfx::ui::WidgetVectorContainer {
   public:
     ~Scene() = default;
 
@@ -26,7 +27,9 @@ class Scene : public gfx::ui::Widget {
                     const gfx::core::Vector2f& size,
                     const gfx::core::Color&    background_color,
                     const gfx::core::Vector3f& camera_pos )
-        : Widget( pos, size ), background_color_( background_color ), pixels_( size.x * size.y )
+        : gfx::ui::WidgetVectorContainer( pos, size ),
+          background_color_( background_color ),
+          pixels_( size.x * size.y )
     {
         model_.scenes.emplace_back( model::SceneManager( camera_pos, size.x, size.y ) );
         model_.scenes.emplace_back( model::SceneManager( camera_pos, size.x, size.y ) );
@@ -73,8 +76,10 @@ class Scene : public gfx::ui::Widget {
     }
 
     virtual bool
-    onIdleSelf( const gfx::core::Event::IdleEvent& event ) override final
+    onIdle( const gfx::ui::Event& event ) override final
     {
+        // // // std::cerr << "Scene: " << __PRETTY_FUNCTION__ << std::endl;
+
         if ( model_.scenes[model_.active_scene_idx].needUpdate() )
         {
             update();
@@ -123,9 +128,16 @@ class Scene : public gfx::ui::Widget {
     }
 
     void
-    drawSelf( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override final
     {
-        window.draw( pixels_.data(), pixels_.size(), gfx::core::PrimitiveType::Points, transform );
+        gfx::core::Transform widget_transform = transform.combine( getTransform() );
+
+        // // std::cerr << __PRETTY_FUNCTION__ << std::endl;
+
+        window.draw( pixels_.data(),
+                     pixels_.size(),
+                     gfx::core::PrimitiveType::Points,
+                     widget_transform );
     }
 
   private:

@@ -123,7 +123,8 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
 gfx::core::Color
 SceneManager::calcReflectedColor( IntersectionContext& ctx )
 {
-    // // std::cerr << ctx.normal.x << " " << ctx.normal.y << " " << ctx.normal.z << std::endl;
+    // // // // std::cerr << ctx.normal.x << " " << ctx.normal.y << " " << ctx.normal.z <<
+    // std::endl;
 
     gfx::core::Vector3f reflect_dir = ctx.view_ray.getDir().calcReflected(
         ctx.normal ); // ctx.view_ray.getDir().calcReflected( ctx.normal );

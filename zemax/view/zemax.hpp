@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gfx/ui/widget.hpp"
+#include "gfx/ui/widget_container.hpp"
 #include "zemax/config.hpp"
 #include "zemax/view/control_panel.hpp"
 #include "zemax/view/scene.hpp"
@@ -9,7 +10,7 @@
 namespace zemax {
 namespace view {
 
-class Zemax : public gfx::ui::Widget {
+class Zemax : public gfx::ui::WidgetVectorContainer {
   public:
     ~Zemax() = default;
     explicit Zemax()

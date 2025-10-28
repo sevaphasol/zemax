@@ -8,6 +8,7 @@
 #include "gfx/ui/button.hpp"
 #include "gfx/ui/scrollbar.hpp"
 #include "gfx/ui/widget.hpp"
+#include "gfx/ui/widget_container.hpp"
 #include "zemax/config.hpp"
 #include "zemax/model/rendering/scenes_manager.hpp"
 #include <iostream>
@@ -16,7 +17,7 @@
 namespace zemax {
 namespace view {
 
-class ControlPanel : public gfx::ui::Widget {
+class ControlPanel : public gfx::ui::WidgetVectorContainer {
   public:
     explicit ControlPanel( zemax::model::ScenesManager& scenes_manager )
         : scenes_manager_( scenes_manager ), camera_( scenes_manager.getActiveScene().getCamera() )
@@ -55,7 +56,7 @@ class ControlPanel : public gfx::ui::Widget {
     }
 
     virtual bool
-    onIdleSelf( const gfx::core::Event::IdleEvent& event ) override final
+    onIdle( const gfx::ui::Event& event ) override final
     {
         if ( isPressed( MoveLeft ) )
         {
@@ -128,6 +129,8 @@ class ControlPanel : public gfx::ui::Widget {
             scenes_manager_.getActiveScene().needUpdate() = true;
         }
 
+        propagateEventToChildren( event );
+
         return false;
     }
 
@@ -185,9 +188,12 @@ class ControlPanel : public gfx::ui::Widget {
     }
 
     virtual void
-    drawSelf( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override final
     {
-        window.draw( border_, transform );
+        gfx::core::Transform widget_transform = transform.combine( getTransform() );
+
+        window.draw( border_, widget_transform );
+        drawChildren( window, widget_transform );
     }
 
   private:
