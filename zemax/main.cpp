@@ -7,11 +7,8 @@ main()
 {
     gfx::ui::WindowManager wm( zemax::Config::Window::Width,
                                zemax::Config::Window::Height,
-                               zemax::Config::Window::Title );
-
-    wm.setBackgroundColor( zemax::Config::Window::BackgroundColor );
-
-    wm.addWidget( std::make_unique<zemax::view::Zemax>() );
+                               zemax::Config::Window::Title,
+                               std::make_unique<zemax::view::Zemax>() );
 
     wm.run();
 

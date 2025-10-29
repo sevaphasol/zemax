@@ -7,11 +7,10 @@
 #include "gfx/core/vertex.hpp"
 #include "gfx/core/window.hpp"
 
-#include "gfx/ui/widget.hpp"
-
-#include "gfx/ui/container_widget.hpp"
+#include "gfx/ui/widget/widget.hpp"
+#include "zemax/config.hpp"
+#include "zemax/model/primitives/material.hpp"
 #include "zemax/model/rendering/scene_manager.hpp"
-#include "zemax/model/rendering/scenes_manager.hpp"
 
 #include <thread>
 #include <vector>
@@ -19,7 +18,7 @@
 namespace zemax {
 namespace view {
 
-class Scene : public gfx::ui::VectorContainerWidget {
+class Scene : public gfx::ui::Widget {
   public:
     ~Scene() = default;
 
@@ -27,66 +26,46 @@ class Scene : public gfx::ui::VectorContainerWidget {
                     const gfx::core::Vector2f& size,
                     const gfx::core::Color&    background_color,
                     const gfx::core::Vector3f& camera_pos )
-        : gfx::ui::VectorContainerWidget( pos, size ),
+        : gfx::ui::Widget( pos, size ),
           background_color_( background_color ),
-          pixels_( size.x * size.y )
+          pixels_( size.x * size.y ),
+          model_( zemax::Config::Camera::Position, size.x, size.y )
     {
-        model_.scenes.emplace_back( model::SceneManager( camera_pos, size.x, size.y ) );
-        model_.scenes.emplace_back( model::SceneManager( camera_pos, size.x, size.y ) );
+        model_.addLight( gfx::core::Vector3f( 3, 3, 3 ), 1.0, 0.3, 0.9 );
+        model_.addLight( gfx::core::Vector3f( 0, 0, -5 ), 0.2, 0.3, 0.9 );
 
-        model_.scenes[0].addLight( gfx::core::Vector3f( 3, 3, 3 ), 1.0, 0.3, 0.9 );
-        model_.scenes[0].addLight( gfx::core::Vector3f( 0, 0, -5 ), 0.2, 0.3, 0.9 );
+        model_.addAABB( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
+                        gfx::core::Vector3f( -2, 1, -8 ),
+                        gfx::core::Vector3f( 0.75, 0.75, 0.75 ) );
 
-        model_.scenes[0].addAABB( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
-                                  gfx::core::Vector3f( -2, 1, -8 ),
-                                  gfx::core::Vector3f( 0.75, 0.75, 0.75 ) );
+        model_.addAABB( model::Material( gfx::core::Color( 8, 8, 8 ), 0.5f ),
+                        gfx::core::Vector3f( -1, 0.5, -5 ),
+                        gfx::core::Vector3f( 0.25, 0.25, 0.25 ) );
 
-        model_.scenes[0].addAABB( model::Material( gfx::core::Color( 8, 8, 8 ), 0.5f ),
-                                  gfx::core::Vector3f( -1, 0.5, -5 ),
-                                  gfx::core::Vector3f( 0.25, 0.25, 0.25 ) );
+        model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
+                          gfx::core::Vector3f( 2, 0, -7 ),
+                          1.5 );
 
-        model_.scenes[0].addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
-                                    gfx::core::Vector3f( 2, 0, -7 ),
-                                    1.5 );
+        model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
+                          gfx::core::Vector3f( -2, 1, -1 ),
+                          1.5 );
 
-        model_.scenes[0].addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
-                                    gfx::core::Vector3f( -2, 1, -1 ),
-                                    1.5 );
-
-        model_.scenes[0].addPlane( model::Material( gfx::core::Color( 128, 8, 127 ), 0.5f ),
-                                   gfx::core::Vector3f( 0, -1.75, 0 ),
-                                   gfx::core::Vector3f( 0, 1, 0 ) );
-
-        model_.scenes[1].addLight( gfx::core::Vector3f( 3, 3, 3 ), 1.0, 0.3, 0.9 );
-        model_.scenes[1].addLight( gfx::core::Vector3f( 0, 0, -5 ), 0.2, 0.3, 0.9 );
-
-        model_.scenes[1].addAABB( model::Material( gfx::core::Color( 255, 8, 8 ), 0.5f ),
-                                  gfx::core::Vector3f( -2, 1, -8 ),
-                                  gfx::core::Vector3f( 0.75, 0.75, 0.75 ) );
-
-        model_.scenes[1].addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
-                                    gfx::core::Vector3f( -2, 1, -1 ),
-                                    1.5 );
+        model_.addPlane( model::Material( gfx::core::Color( 128, 8, 127 ), 0.5f ),
+                         gfx::core::Vector3f( 0, -1.75, 0 ),
+                         gfx::core::Vector3f( 0, 1, 0 ) );
     }
 
-    model::ScenesManager&
+    bool
+    onIdle( const gfx::ui::Event& event ) override
+    {
+        update();
+        return false;
+    }
+
+    model::SceneManager&
     getModel()
     {
         return model_;
-    }
-
-    virtual bool
-    onIdle( const gfx::ui::Event& event ) override final
-    {
-        // // // std::cerr << "Scene: " << __PRETTY_FUNCTION__ << std::endl;
-
-        if ( model_.scenes[model_.active_scene_idx].needUpdate() )
-        {
-            update();
-            model_.scenes[model_.active_scene_idx].needUpdate() = false;
-        }
-
-        return false;
     }
 
   private:
@@ -113,8 +92,8 @@ class Scene : public gfx::ui::VectorContainerWidget {
                     {
                         gfx::core::Vector2f pos( static_cast<float>( col ),
                                                  static_cast<float>( row ) );
-                        gfx::core::Color    color = model_.scenes[model_.active_scene_idx]
-                                                     .calcPixelColor( row, col, background_color_ );
+                        gfx::core::Color    color =
+                            model_.calcPixelColor( row, col, background_color_ );
                         pixels_[row * w + col] = gfx::core::Vertex( pos, color );
                     }
                 }
@@ -128,20 +107,13 @@ class Scene : public gfx::ui::VectorContainerWidget {
     }
 
     void
-    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+    drawSelf( gfx::core::Window& window, gfx::core::Transform transform ) const override final
     {
-        gfx::core::Transform widget_transform = transform.combine( getTransform() );
-
-        // // std::cerr << __PRETTY_FUNCTION__ << std::endl;
-
-        window.draw( pixels_.data(),
-                     pixels_.size(),
-                     gfx::core::PrimitiveType::Points,
-                     widget_transform );
+        window.draw( pixels_.data(), pixels_.size(), gfx::core::PrimitiveType::Points, transform );
     }
 
   private:
-    model::ScenesManager           model_;
+    model::SceneManager            model_;
     gfx::core::Color               background_color_;
     std::vector<gfx::core::Vertex> pixels_;
 };

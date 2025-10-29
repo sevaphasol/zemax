@@ -1,12 +1,11 @@
 #pragma once
 
-#include "gfx/ui/container_widget.hpp"
-#include "gfx/ui/widget.hpp"
+#include "gfx/ui/widget/container.hpp"
 #include "zemax/config.hpp"
 #include "zemax/view/control_panel.hpp"
 #include "zemax/view/scene.hpp"
-#include <any>
-#include <memory>
+
+#include <iostream>
 
 namespace zemax {
 namespace view {
@@ -18,6 +17,7 @@ class Zemax : public gfx::ui::ContainerWidget {
                   Config::Scene::Size,
                   Config::Scene::BackgroundColor,
                   Config::Camera::Position ),
+          gfx::ui::ContainerWidget( { 0, 0 }, { Config::Window::Width, Config::Window::Height } ),
           panel_( scene_.getModel() )
     {
     }
@@ -25,19 +25,36 @@ class Zemax : public gfx::ui::ContainerWidget {
     ~Zemax() = default;
 
     bool
-    propagateEventToChildren( const gfx::ui::Event& event ) override
+    propagate( const gfx::ui::Event& event ) override final
     {
-        if ( event.apply( &panel_ ) )
-        {
-            return true;
-        }
+        std::cerr << "propagate " << typeid( event ).name() << std::endl;
 
         if ( event.apply( &scene_ ) )
         {
             return true;
         }
 
+        if ( event.apply( &panel_ ) )
+        {
+            return true;
+        }
+
         return false;
+    }
+
+    void
+    drawSelf( gfx::core::Window& window, gfx::core::Transform transform ) const override
+    {
+    }
+
+    void
+    drawChildren( gfx::core::Window& window, gfx::core::Transform transform ) const override
+    {
+        std::cerr << __PRETTY_FUNCTION__ << ":" << getPosition().x << " " << getPosition().y
+                  << std::endl;
+
+        window.draw( scene_ );
+        window.draw( panel_ );
     }
 
   private:
