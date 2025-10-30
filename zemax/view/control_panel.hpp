@@ -8,10 +8,13 @@
 #include "gfx/ui/button.hpp"
 #include "gfx/ui/container_widget.hpp"
 #include "gfx/ui/scrollbar.hpp"
+#include "gfx/ui/text_field.hpp"
 #include "gfx/ui/widget.hpp"
 #include "zemax/config.hpp"
 #include "zemax/model/rendering/scene_manager.hpp"
 #include "zemax/view/scrollable_buttons_widget.hpp"
+#include <algorithm>
+#include <cmath>
 #include <iostream>
 #include <memory>
 #include <sstream>
@@ -23,12 +26,10 @@ namespace view {
 class ControlPanel : public gfx::ui::ContainerWidget {
   public:
     explicit ControlPanel( zemax::model::SceneManager& scene_manager )
-        : scene_manager_( scene_manager ), camera_( scene_manager.getCamera() )
-    //   scrollbar_( Config::ControlPanel::ScrollBar::Position.x,
-    //               Config::ControlPanel::ScrollBar::Position.y,
-    //               125,
-    //               200 )
-
+        : scene_manager_( scene_manager ),
+          camera_( scene_manager.getCamera() ),
+          scrollbar_( Config::ControlPanel::ScrollBar::Position,
+                      Config::ControlPanel::ScrollBar::Size )
     {
         loadFont( Config::ControlPanel::Button::FontName );
 
@@ -70,27 +71,50 @@ class ControlPanel : public gfx::ui::ContainerWidget {
         setupButton( ButtonCode::RotateDown,
                      Config::ControlPanel::Button::RtD::Position,
                      Config::ControlPanel::Button::RtD::Title );
-        setupButton( ButtonCode::DeleteObj,
-                     Config::ControlPanel::Button::DelObj::Position,
-                     Config::ControlPanel::Button::DelObj::Title );
+        setupButton( ButtonCode::ScaleUp,
+                     Config::ControlPanel::Button::ScaleUp::Position,
+                     Config::ControlPanel::Button::ScaleUp::Title );
+        setupButton( ButtonCode::ScaleDown,
+                     Config::ControlPanel::Button::ScaleDown::Position,
+                     Config::ControlPanel::Button::ScaleDown::Title );
 
-        //         scrollbar_.parent_ = this;
-        //
-        //         for ( size_t i = 0; i < scene_manager.getObjectsCount(); i++ )
-        //         {
-        //             scrollbar_.addButton(
-        //                 scene_manager_.getObjectInfo( i ),
-        //                 std::make_unique<gfx::ui::Button>(
-        //                     gfx::core::Vector2f( 25, 0 ),
-        //                     gfx::core::Vector2f( Config::ControlPanel::Button::Size.x, 200 ),
-        //                     Config::ControlPanel::Button::DefaultColor,
-        //                     Config::ControlPanel::Button::HoveredColor,
-        //                     Config::ControlPanel::Button::PressedColor,
-        //                     labels_font_,
-        //                     getObjInfoString( scene_manager_.getObjectInfo( i ) ),
-        //                     Config::ControlPanel::Button::FontColor,
-        //                     Config::ControlPanel::Button::FontSize ) );
-        //         }
+        setupButton( ButtonCode::MoveObjLeft,
+                     Config::ControlPanel::Button::MoveObjLeft::Position,
+                     Config::ControlPanel::Button::MoveObjLeft::Title );
+        setupButton( ButtonCode::MoveObjRight,
+                     Config::ControlPanel::Button::MoveObjRight::Position,
+                     Config::ControlPanel::Button::MoveObjRight::Title );
+        setupButton( ButtonCode::MoveObjUp,
+                     Config::ControlPanel::Button::MoveObjUp::Position,
+                     Config::ControlPanel::Button::MoveObjUp::Title );
+        setupButton( ButtonCode::MoveObjDown,
+                     Config::ControlPanel::Button::MoveObjDown::Position,
+                     Config::ControlPanel::Button::MoveObjDown::Title );
+        setupButton( ButtonCode::MoveObjForward,
+                     Config::ControlPanel::Button::MoveObjForwrd::Position,
+                     Config::ControlPanel::Button::MoveObjForwrd::Title );
+        setupButton( ButtonCode::MoveObjBackward,
+                     Config::ControlPanel::Button::MoveObjBackward::Position,
+                     Config::ControlPanel::Button::MoveObjBackward::Title );
+
+        setupButton( ButtonCode::AddObj,
+                     Config::ControlPanel::Button::AddObj::Position,
+                     Config::ControlPanel::Button::AddObj::Title );
+        setupButton( ButtonCode::CopyObj,
+                     Config::ControlPanel::Button::CopyObj::Position,
+                     Config::ControlPanel::Button::CopyObj::Title );
+        setupButton( ButtonCode::DeleteObj,
+                     Config::ControlPanel::Button::DeleteObj::Position,
+                     Config::ControlPanel::Button::DeleteObj::Title );
+
+        setupTextField( TextFieldCode::NewObjX, Config::ControlPanel::TextField::X::Position );
+        setupTextField( TextFieldCode::NewObjY, Config::ControlPanel::TextField::Y::Position );
+        setupTextField( TextFieldCode::NewObjZ, Config::ControlPanel::TextField::Z::Position );
+
+        scrollbar_.parent_ = this;
+        setupScrollBarButton( ScrollBarButtonCode::Sphere, "Sphere" );
+        setupScrollBarButton( ScrollBarButtonCode::Plane, "Plane" );
+        setupScrollBarButton( ScrollBarButtonCode::AABB, "AABB" );
     }
 
     static std::string
@@ -115,8 +139,15 @@ class ControlPanel : public gfx::ui::ContainerWidget {
             }
         }
 
-        return false;
-        // return event.apply( &scrollbar_ );
+        for ( const auto& text_field : text_fields_ )
+        {
+            if ( event.apply( text_field.get() ) )
+            {
+                return true;
+            }
+        }
+
+        return event.apply( &scrollbar_ );
     }
 
     virtual bool
@@ -155,6 +186,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
             scene_manager_.getCamera().move( { 0.0f, 0.0f, Config::Camera::MoveFactor } );
             scene_manager_.needUpdate() = true;
         }
+
         if ( isPressed( RotateLeft ) )
         {
             scene_manager_.getCamera().rotate( { Config::Camera::RotateFactor, 0.0f } );
@@ -175,30 +207,78 @@ class ControlPanel : public gfx::ui::ContainerWidget {
             scene_manager_.getCamera().rotate( { 0.0f, Config::Camera::RotateFactor } );
             scene_manager_.needUpdate() = true;
         }
+        if ( isPressed( ScaleUp ) )
+        {
+            scene_manager_.getCamera().scale( -Config::Camera::ScaleFactor );
+            scene_manager_.needUpdate() = true;
+        }
+        if ( isPressed( ScaleDown ) )
+        {
+            scene_manager_.getCamera().scale( Config::Camera::ScaleFactor );
+            scene_manager_.needUpdate() = true;
+        }
+
+        if ( isPressed( MoveObjLeft ) )
+        {
+            scene_manager_.getTargetObj()->move(
+                gfx::core::Vector3f( -Config::Camera::ObjMoveFactor, 0, 0 ) );
+            scene_manager_.needUpdate() = true;
+        }
+        if ( isPressed( MoveObjRight ) )
+        {
+            scene_manager_.getTargetObj()->move(
+                gfx::core::Vector3f( Config::Camera::ObjMoveFactor, 0, 0 ) );
+            scene_manager_.needUpdate() = true;
+        }
+        if ( isPressed( MoveObjUp ) )
+        {
+            scene_manager_.getTargetObj()->move(
+                gfx::core::Vector3f( 0, Config::Camera::ObjMoveFactor, 0 ) );
+            scene_manager_.needUpdate() = true;
+        }
+        if ( isPressed( MoveObjDown ) )
+        {
+            scene_manager_.getTargetObj()->move(
+                gfx::core::Vector3f( 0, -Config::Camera::ObjMoveFactor, 0 ) );
+            scene_manager_.needUpdate() = true;
+        }
+        if ( isPressed( MoveObjForward ) )
+        {
+            scene_manager_.getTargetObj()->move(
+                gfx::core::Vector3f( 0, 0, -Config::Camera::ObjMoveFactor ) );
+            scene_manager_.needUpdate() = true;
+        }
+        if ( isPressed( MoveObjBackward ) )
+        {
+            scene_manager_.getTargetObj()->move(
+                gfx::core::Vector3f( 0, 0, Config::Camera::ObjMoveFactor ) );
+            scene_manager_.needUpdate() = true;
+        }
+
+        if ( isPressed( AddObj ) )
+        {
+            std::cerr << "AddObj" << std::endl;
+            scene_manager_.needUpdate() = true;
+        }
+        if ( isPressed( CopyObj ) )
+        {
+            std::cerr << "CopyObj" << std::endl;
+            float new_obj_x = text_fields_[TextFieldCode::NewObjX]->strToDouble();
+            float new_obj_y = text_fields_[TextFieldCode::NewObjY]->strToDouble();
+            float new_obj_z = text_fields_[TextFieldCode::NewObjZ]->strToDouble();
+
+            if ( !std::isnan( new_obj_x ) && !std::isnan( new_obj_y ) && !std::isnan( new_obj_z ) )
+            {
+                scene_manager_.copyTargetObj( new_obj_x, new_obj_y, new_obj_z );
+            }
+
+            scene_manager_.needUpdate() = true;
+        }
         if ( isPressed( DeleteObj ) )
         {
             scene_manager_.deleteTargetObj();
             scene_manager_.needUpdate() = true;
         }
-
-        //         if ( scrollbar_.isScrolled() )
-        //         {
-        //             auto& cur_active_obj_ctx  = scrollbar_.getButtonCtx(
-        //             scrollbar_.getCurActiveButton() ); auto& prev_active_obj_ctx =
-        //             scrollbar_.getButtonCtx( scrollbar_.getPrevActiveButton() );
-        //
-        //             scene_manager_.revert_paint( prev_active_obj_ctx.obj_info.objects_idx );
-        //             scene_manager_.paint( cur_active_obj_ctx.obj_info.objects_idx );
-        //         }
-        //
-        //         if ( scrollbar_.isActiveButtonPressed() )
-        //         {
-        //             // std::cerr << "Pressed" << std::endl;
-        //
-        //             // auto& obj_ctx = scrollbar_.getButtonCtx( scrollbar_.getActiveButton() );
-        //
-        //             // scene_manager_.paint( obj_ctx.obj_info.objects_idx );
-        //         }
 
         propagateEventToChildren( event );
 
@@ -206,24 +286,52 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     }
 
   private:
+    gfx::core::Font labels_font_;
+
     enum ButtonCode {
-        MoveLeft     = 0,
-        MoveRight    = 1,
-        MoveUp       = 2,
-        MoveDown     = 3,
-        MoveForward  = 4,
-        MoveBackward = 5,
-        RotateLeft   = 6,
-        RotateRight  = 7,
-        RotateUp     = 8,
-        RotateDown   = 9,
-        DeleteObj    = 10,
-        Count,
+        MoveLeft,
+        MoveRight,
+        MoveUp,
+        MoveDown,
+        MoveForward,
+        MoveBackward,
+        RotateLeft,
+        RotateRight,
+        RotateUp,
+        RotateDown,
+        ScaleUp,
+        ScaleDown,
+        MoveObjLeft,
+        MoveObjRight,
+        MoveObjUp,
+        MoveObjDown,
+        MoveObjForward,
+        MoveObjBackward,
+        AddObj,
+        CopyObj,
+        DeleteObj,
+        ButtonCount,
     };
 
-    std::unique_ptr<gfx::ui::Button> buttons_[ButtonCode::Count];
+    std::unique_ptr<gfx::ui::Button> buttons_[ButtonCount];
 
-    // ScrollableButtonsWidget scrollbar_;
+    enum TextFieldCode {
+        NewObjX = 0,
+        NewObjY = 1,
+        NewObjZ = 2,
+        TextFieldCount,
+    };
+
+    std::unique_ptr<gfx::ui::TextField> text_fields_[TextFieldCount];
+
+    enum ScrollBarButtonCode {
+        Sphere = 0,
+        Plane  = 1,
+        AABB   = 2,
+        ScrollBarButtonCodeCount,
+    };
+
+    ScrollableButtonsWidget scrollbar_;
 
     void
     loadFont( const std::string& font_name )
@@ -250,6 +358,32 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                                                title,
                                                Config::ControlPanel::Button::FontColor,
                                                Config::ControlPanel::Button::FontSize ) );
+        buttons_[code]->parent_ = this;
+    }
+
+    void
+    setupTextField( TextFieldCode code, const gfx::core::Vector2f& pos )
+    {
+        text_fields_[code] = std::move(
+            std::make_unique<gfx::ui::TextField>( labels_font_,
+                                                  pos,
+                                                  Config::ControlPanel::TextField::Size ) );
+        text_fields_[code]->parent_ = this;
+    }
+
+    void
+    setupScrollBarButton( ScrollBarButtonCode code, const char* label )
+    {
+        scrollbar_.addButton(
+            std::make_unique<gfx::ui::Button>( Config::ControlPanel::ScrollBar::Button::Position,
+                                               Config::ControlPanel::ScrollBar::Button::Size,
+                                               Config::ControlPanel::Button::DefaultColor,
+                                               Config::ControlPanel::Button::HoveredColor,
+                                               Config::ControlPanel::Button::PressedColor,
+                                               labels_font_,
+                                               label,
+                                               Config::ControlPanel::Button::FontColor,
+                                               Config::ControlPanel::Button::FontSize ) );
     }
 
     virtual void
@@ -264,7 +398,12 @@ class ControlPanel : public gfx::ui::ContainerWidget {
             window.draw( *button, widget_transform );
         }
 
-        // window.draw( scrollbar_, widget_transform );
+        for ( const auto& text_field : text_fields_ )
+        {
+            window.draw( *text_field, widget_transform );
+        }
+
+        window.draw( scrollbar_, widget_transform );
     }
 
   private:
@@ -272,7 +411,6 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     zemax::model::Camera&       camera_;
 
     gfx::core::RectangleShape border_;
-    gfx::core::Font           labels_font_;
 };
 
 } // namespace view

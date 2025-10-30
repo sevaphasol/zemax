@@ -19,6 +19,12 @@ class Plane : public Primitive {
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
+    std::unique_ptr<Primitive>
+    clone() const override
+    {
+        return std::make_unique<Plane>( *this );
+    }
+
     const char*
     getName() override final
     {

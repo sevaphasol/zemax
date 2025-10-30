@@ -55,6 +55,40 @@ class SceneManager {
         }
     }
 
+    void
+    copyTargetObj( float new_obj_x, float new_obj_y, float new_obj_z )
+    {
+        std::cerr << __PRETTY_FUNCTION__ << std::endl;
+        std::cerr << new_obj_x << " " << new_obj_y << " " << new_obj_z << std::endl;
+
+        if ( target_obj_ == nullptr )
+        {
+            std::cerr << "copyTargetObj: no target object set" << std::endl;
+            return;
+        }
+
+        int idx = -1;
+        for ( int i = 0; i < objects_.size(); ++i )
+        {
+            if ( objects_[i].get() == target_obj_ )
+            {
+                idx = i;
+                break;
+            }
+        }
+
+        assert( idx != -1 );
+
+        auto new_obj = target_obj_->clone();
+
+        gfx::core::Vector3f new_pos{ new_obj_x, new_obj_y, new_obj_z };
+        new_obj->setOrigin( new_pos );
+
+        objects_.push_back( std::move( new_obj ) );
+
+        need_update_ = true;
+    }
+
     ObjectInfo
     getObjectInfo( size_t idx )
     {
@@ -79,7 +113,7 @@ class SceneManager {
         return { .pos = obj->getOrigin(), .type_name = obj_name, .objects_idx = idx };
     }
 
-    std::optional<Primitive*>
+    Primitive*
     getIntersectedObj( uint px, uint py )
     {
         Ray ray = camera_.emitRay( px, py );
@@ -88,7 +122,7 @@ class SceneManager {
 
         if ( !findClosestIntersection( ctx ) )
         {
-            return std::nullopt;
+            return nullptr;
         }
 
         return ctx.closest_object;

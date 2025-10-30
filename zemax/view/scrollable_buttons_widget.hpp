@@ -21,14 +21,12 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
                                       const gfx::core::Vector2f& size = { 0.0f, 0.0f } )
         : ContainerWidget( pos, size ), scroll_bar_( 0, 0 )
     {
-        setDraggable( true );
-
         // setPosition( Config::ControlPanel::Size );
         // setSize( Config::ControlPanel::Size );
 
         border_.setSize( size );
         border_.setFillColor( gfx::core::Color::Transparent );
-        border_.setOutlineColor( gfx::core::Color::Red );
+        border_.setOutlineColor( gfx::core::Color( 96, 96, 96 ) );
         border_.setOutlineThickness( 2.f );
 
         scroll_bar_.parent_ = this;
@@ -51,7 +49,7 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
 
         if ( !buttons_.empty() )
         {
-            if ( event.apply( buttons_[cur_active_button_].p_btn.get() ) )
+            if ( event.apply( buttons_[cur_active_button_].get() ) )
             {
                 return true;
             }
@@ -87,7 +85,7 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
     {
         if ( !buttons_.empty() )
         {
-            return buttons_[cur_active_button_].p_btn->isPressed();
+            return buttons_[cur_active_button_]->isPressed();
         }
 
         return false;
@@ -118,22 +116,10 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
     // }
 
     void
-    addButton( model::SceneManager::ObjectInfo obj_info, std::unique_ptr<gfx::ui::Button> button )
+    addButton( std::unique_ptr<gfx::ui::Button> button )
     {
         button->parent_ = this;
-        buttons_.push_back( { obj_info, std::move( button ) } );
-    }
-
-    struct ButtonCtx
-    {
-        model::SceneManager::ObjectInfo  obj_info;
-        std::unique_ptr<gfx::ui::Button> p_btn;
-    };
-
-    ButtonCtx&
-    getButtonCtx( size_t idx )
-    {
-        return buttons_[idx];
+        buttons_.push_back( std::move( button ) );
     }
 
   private:
@@ -145,11 +131,11 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
         window.draw( scroll_bar_, widget_transform );
         if ( !buttons_.empty() )
         {
-            window.draw( *buttons_[cur_active_button_].p_btn, widget_transform );
+            window.draw( *buttons_[cur_active_button_], widget_transform );
         }
 
-        // std::cerr << border_.getSize().x << " " << border_.getSize().y << std::endl;
-        // std::cerr << border_.getPosition().x << " " << border_.getPosition().y << std::endl;
+        // // std::cerr << border_.getSize().x << " " << border_.getSize().y << std::endl;
+        // // std::cerr << border_.getPosition().x << " " << border_.getPosition().y << std::endl;
 
         window.draw( border_, widget_transform );
     }
@@ -164,7 +150,7 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
 
     bool is_scroled_ = false;
 
-    std::vector<ButtonCtx> buttons_;
+    std::vector<std::unique_ptr<gfx::ui::Button>> buttons_;
 };
 
 } // namespace view

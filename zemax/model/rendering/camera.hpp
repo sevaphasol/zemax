@@ -9,7 +9,10 @@ namespace model {
 
 class Camera {
   public:
-    Camera( const gfx::core::Vector3f& pos, float screen_width, float screen_height );
+    Camera( const gfx::core::Vector3f& pos,
+            float                      screen_width,
+            float                      screen_height,
+            float                      fov = 1.0f );
 
     gfx::core::Vector3f&
     getPos()
@@ -26,6 +29,9 @@ class Camera {
     void
     rotate( const gfx::core::Vector2f& delta );
 
+    void
+    scale( float scale_factor );
+
   private:
     void
     rotate( float angle, gfx::core::Vector3f& ort );
@@ -38,6 +44,7 @@ class Camera {
     float               screen_width_;
     float               screen_height_;
     float               aspect_ratio_;
+    float               fov_;
 };
 
 } // namespace model

@@ -84,38 +84,125 @@ struct Config
 
             struct RtL
             {
-                static constexpr gfx::core::Vector2f Position = { 30.0f, 170.0f };
+                static constexpr gfx::core::Vector2f Position = { 30.0f, 200.0f };
                 static constexpr const char*         Title    = "Rotate left";
             };
 
             struct RtR
             {
-                static constexpr gfx::core::Vector2f Position = { 140.0f, 170.0f };
+                static constexpr gfx::core::Vector2f Position = { 30.0f, 260.0f };
                 static constexpr const char*         Title    = "Rotate rigth";
             };
 
             struct RtU
             {
-                static constexpr gfx::core::Vector2f Position = { 30.0f, 230.0f };
+                static constexpr gfx::core::Vector2f Position = { 140.0f, 200.0f };
                 static constexpr const char*         Title    = "Rotate up";
             };
 
             struct RtD
             {
-                static constexpr gfx::core::Vector2f Position = { 140.0f, 230.0f };
+                static constexpr gfx::core::Vector2f Position = { 140.0f, 260.0f };
                 static constexpr const char*         Title    = "Rotate down";
             };
 
-            struct DelObj
+            struct ScaleUp
             {
-                static constexpr gfx::core::Vector2f Position = { 250.0f, 170.0f };
+                static constexpr gfx::core::Vector2f Position = { 250.0f, 200.0f };
+                static constexpr const char*         Title    = "Scale up";
+            };
+
+            struct ScaleDown
+            {
+                static constexpr gfx::core::Vector2f Position = { 250.0f, 260.0f };
+                static constexpr const char*         Title    = "Scale down";
+            };
+
+            struct MoveObjLeft
+            {
+                static constexpr gfx::core::Vector2f Position = { 30.0f, 350.0f };
+                static constexpr const char*         Title    = "Move obj left";
+            };
+
+            struct MoveObjRight
+            {
+                static constexpr gfx::core::Vector2f Position = { 30.0f, 410.0f };
+                static constexpr const char*         Title    = "Move obj right";
+            };
+
+            struct MoveObjUp
+            {
+                static constexpr gfx::core::Vector2f Position = { 140.0f, 350.0f };
+                static constexpr const char*         Title    = "Move obj up";
+            };
+
+            struct MoveObjDown
+            {
+                static constexpr gfx::core::Vector2f Position = { 140.0f, 410.0f };
+                static constexpr const char*         Title    = "Move obj down";
+            };
+
+            struct MoveObjForwrd
+            {
+                static constexpr gfx::core::Vector2f Position = { 250.0f, 350.0f };
+                static constexpr const char*         Title    = "Move obj fwd";
+            };
+
+            struct MoveObjBackward
+            {
+                static constexpr gfx::core::Vector2f Position = { 250.0f, 410.0f };
+                static constexpr const char*         Title    = "Move obj bwd";
+            };
+
+            struct AddObj
+            {
+                static constexpr gfx::core::Vector2f Position = { 30.0f, 500.0f };
+                static constexpr const char*         Title    = "Add obj";
+            };
+
+            struct CopyObj
+            {
+                static constexpr gfx::core::Vector2f Position = { 140.0f, 500.0f };
+                static constexpr const char*         Title    = "Copy obj";
+            };
+
+            struct DeleteObj
+            {
+                static constexpr gfx::core::Vector2f Position = { 250.0f, 500.0f };
                 static constexpr const char*         Title    = "Delete obj";
+            };
+        };
+
+        struct TextField
+        {
+            static constexpr gfx::core::Vector2f Size = { 30.0f, 20.0f };
+
+            struct X
+            {
+                static constexpr gfx::core::Vector2f Position = { 135.0f, 570.0f };
+            };
+
+            struct Y
+            {
+                static constexpr gfx::core::Vector2f Position = { 135.0f, 600.0f };
+            };
+
+            struct Z
+            {
+                static constexpr gfx::core::Vector2f Position = { 135.0f, 630.0f };
             };
         };
 
         struct ScrollBar
         {
-            static constexpr gfx::core::Vector2f Position = { 100.0f, 350.0f };
+            static constexpr gfx::core::Vector2f Position = { 30.0f, 570.0f };
+            static constexpr gfx::core::Vector2f Size     = { 90.0f, 100.0f };
+
+            struct Button
+            {
+                static constexpr gfx::core::Vector2f Position = { 15.0f, 0.0f };
+                static constexpr gfx::core::Vector2f Size     = { 75.0f, 100.0f };
+            };
         };
     };
 
@@ -130,8 +217,10 @@ struct Config
     {
         static constexpr gfx::core::Vector3f Position = { 0.0f, 0.0f, 0.0f };
 
-        static constexpr float MoveFactor   = 0.1f;
-        static constexpr float RotateFactor = 0.1f;
+        static constexpr float MoveFactor    = 0.1f;
+        static constexpr float ObjMoveFactor = 0.1f;
+        static constexpr float RotateFactor  = 0.03f;
+        static constexpr float ScaleFactor   = 0.03f;
     };
 };
 

@@ -84,23 +84,18 @@ class Scene : public gfx::ui::Widget {
         auto px = event.info.mouse_button.x - getAbsPos().x;
         auto py = event.info.mouse_button.y - getAbsPos().y;
 
-        std::optional<model::Primitive*> obj = model_.getIntersectedObj( px, py );
+        model::Primitive* obj = model_.getIntersectedObj( px, py );
 
-        if ( obj.has_value() )
+        if ( model_.getTargetObj() != nullptr )
         {
-            std::cerr << "Clicked on " << px << " " << py << " -- " << obj.value()->getName()
-                      << std::endl;
+            model_.getTargetObj()->revert_paint();
+        }
 
-            if ( model_.getTargetObj() != nullptr )
-            {
-                model_.getTargetObj()->revert_paint();
-            }
+        model_.setTargetObj( obj );
 
-            model_.setTargetObj( obj.value() );
+        if ( obj != nullptr )
+        {
             model_.getTargetObj()->paint();
-        } else
-        {
-            std::cerr << "Clicked on " << px << " " << py << " -- " << "non-object" << std::endl;
         }
 
         return true;

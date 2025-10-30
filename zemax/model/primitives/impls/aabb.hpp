@@ -19,6 +19,12 @@ class AABB : public Primitive {
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
+    std::unique_ptr<Primitive>
+    clone() const override
+    {
+        return std::make_unique<AABB>( *this );
+    }
+
     const char*
     getName() override final
     {

@@ -4,6 +4,7 @@
 #include "gfx/core/vector3.hpp"
 #include "zemax/model/primitives/material.hpp"
 #include "zemax/model/rendering/ray.hpp"
+#include <memory>
 #include <optional>
 
 namespace zemax {
@@ -19,6 +20,9 @@ class Primitive {
 
     virtual const char*
     getName() = 0;
+
+    virtual std::unique_ptr<Primitive>
+    clone() const = 0;
 
     void
     paint()
@@ -54,6 +58,12 @@ class Primitive {
     getOrigin() const
     {
         return origin_;
+    }
+
+    void
+    setOrigin( const gfx::core::Vector3f& new_origin )
+    {
+        origin_ = new_origin;
     }
 
     virtual void
