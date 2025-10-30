@@ -84,6 +84,9 @@ class SceneManager {
         gfx::core::Vector3f new_pos{ new_obj_x, new_obj_y, new_obj_z };
         new_obj->setOrigin( new_pos );
 
+        target_obj_->revert_paint();
+        target_obj_ = new_obj.get();
+
         objects_.push_back( std::move( new_obj ) );
 
         need_update_ = true;

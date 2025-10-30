@@ -175,33 +175,66 @@ struct Config
 
         struct TextField
         {
-            static constexpr gfx::core::Vector2f Size = { 30.0f, 20.0f };
+            static constexpr gfx::core::Vector2f Size = { 40.0f, 20.0f };
 
             struct X
             {
                 static constexpr gfx::core::Vector2f Position = { 135.0f, 570.0f };
+                static constexpr const char*         Title    = "X";
             };
 
             struct Y
             {
                 static constexpr gfx::core::Vector2f Position = { 135.0f, 600.0f };
+                static constexpr const char*         Title    = "Y";
             };
 
             struct Z
             {
                 static constexpr gfx::core::Vector2f Position = { 135.0f, 630.0f };
+                static constexpr const char*         Title    = "Z";
+            };
+
+            struct Size
+            {
+                static constexpr gfx::core::Vector2f Position = { 135.0f, 660.0f };
+                static constexpr const char*         Title    = "S";
+            };
+
+            struct R
+            {
+                static constexpr gfx::core::Vector2f Position = { 195.0f, 570.0f };
+                static constexpr const char*         Title    = "R";
+            };
+
+            struct G
+            {
+                static constexpr gfx::core::Vector2f Position = { 195.0f, 600.0f };
+                static constexpr const char*         Title    = "G";
+            };
+
+            struct B
+            {
+                static constexpr gfx::core::Vector2f Position = { 195.0f, 630.0f };
+                static constexpr const char*         Title    = "B";
+            };
+
+            struct RefFactor
+            {
+                static constexpr gfx::core::Vector2f Position = { 195.0f, 660.0f };
+                static constexpr const char*         Title    = "F";
             };
         };
 
         struct ScrollBar
         {
             static constexpr gfx::core::Vector2f Position = { 30.0f, 570.0f };
-            static constexpr gfx::core::Vector2f Size     = { 90.0f, 100.0f };
+            static constexpr gfx::core::Vector2f Size     = { 90.0f, 110.0f };
 
             struct Button
             {
                 static constexpr gfx::core::Vector2f Position = { 15.0f, 0.0f };
-                static constexpr gfx::core::Vector2f Size     = { 75.0f, 100.0f };
+                static constexpr gfx::core::Vector2f Size     = { 75.0f, 110.0f };
             };
         };
     };

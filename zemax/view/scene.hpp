@@ -86,6 +86,9 @@ class Scene : public gfx::ui::Widget {
 
         model::Primitive* obj = model_.getIntersectedObj( px, py );
 
+        std::cerr << model_.getTargetObj() << std::endl;
+        std::cerr << obj << std::endl;
+
         if ( model_.getTargetObj() != nullptr )
         {
             model_.getTargetObj()->revert_paint();

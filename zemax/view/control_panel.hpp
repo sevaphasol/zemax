@@ -1,9 +1,11 @@
 #pragma once
 
+#include "gfx/core/color.hpp"
 #include "gfx/core/event.hpp"
 #include "gfx/core/font.hpp"
 #include "gfx/core/rectangle_shape.hpp"
 #include "gfx/core/vector2.hpp"
+#include "gfx/core/vector3.hpp"
 #include "gfx/core/window.hpp"
 #include "gfx/ui/button.hpp"
 #include "gfx/ui/container_widget.hpp"
@@ -17,6 +19,7 @@
 #include <cmath>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <sstream>
 #include <string>
 
@@ -107,9 +110,30 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                      Config::ControlPanel::Button::DeleteObj::Position,
                      Config::ControlPanel::Button::DeleteObj::Title );
 
-        setupTextField( TextFieldCode::NewObjX, Config::ControlPanel::TextField::X::Position );
-        setupTextField( TextFieldCode::NewObjY, Config::ControlPanel::TextField::Y::Position );
-        setupTextField( TextFieldCode::NewObjZ, Config::ControlPanel::TextField::Z::Position );
+        setupTextField( TextFieldCode::NewObjX,
+                        Config::ControlPanel::TextField::X::Position,
+                        Config::ControlPanel::TextField::X::Title );
+        setupTextField( TextFieldCode::NewObjY,
+                        Config::ControlPanel::TextField::Y::Position,
+                        Config::ControlPanel::TextField::Y::Title );
+        setupTextField( TextFieldCode::NewObjZ,
+                        Config::ControlPanel::TextField::Z::Position,
+                        Config::ControlPanel::TextField::Z::Title );
+        setupTextField( TextFieldCode::NewObjS,
+                        Config::ControlPanel::TextField::Size::Position,
+                        Config::ControlPanel::TextField::Size::Title );
+        setupTextField( TextFieldCode::NewObjR,
+                        Config::ControlPanel::TextField::R::Position,
+                        Config::ControlPanel::TextField::R::Title );
+        setupTextField( TextFieldCode::NewObjG,
+                        Config::ControlPanel::TextField::G::Position,
+                        Config::ControlPanel::TextField::G::Title );
+        setupTextField( TextFieldCode::NewObjB,
+                        Config::ControlPanel::TextField::B::Position,
+                        Config::ControlPanel::TextField::B::Title );
+        setupTextField( TextFieldCode::NewObjF,
+                        Config::ControlPanel::TextField::RefFactor::Position,
+                        Config::ControlPanel::TextField::RefFactor::Title );
 
         scrollbar_.parent_ = this;
         setupScrollBarButton( ScrollBarButtonCode::Sphere, "Sphere" );
@@ -220,56 +244,118 @@ class ControlPanel : public gfx::ui::ContainerWidget {
 
         if ( isPressed( MoveObjLeft ) )
         {
-            scene_manager_.getTargetObj()->move(
-                gfx::core::Vector3f( -Config::Camera::ObjMoveFactor, 0, 0 ) );
-            scene_manager_.needUpdate() = true;
+            if ( scene_manager_.getTargetObj() != nullptr )
+            {
+                scene_manager_.getTargetObj()->move(
+                    gfx::core::Vector3f( -Config::Camera::ObjMoveFactor, 0, 0 ) );
+                scene_manager_.needUpdate() = true;
+            }
         }
         if ( isPressed( MoveObjRight ) )
         {
-            scene_manager_.getTargetObj()->move(
-                gfx::core::Vector3f( Config::Camera::ObjMoveFactor, 0, 0 ) );
-            scene_manager_.needUpdate() = true;
+            if ( scene_manager_.getTargetObj() != nullptr )
+            {
+                scene_manager_.getTargetObj()->move(
+                    gfx::core::Vector3f( Config::Camera::ObjMoveFactor, 0, 0 ) );
+                scene_manager_.needUpdate() = true;
+            }
         }
         if ( isPressed( MoveObjUp ) )
         {
-            scene_manager_.getTargetObj()->move(
-                gfx::core::Vector3f( 0, Config::Camera::ObjMoveFactor, 0 ) );
-            scene_manager_.needUpdate() = true;
+            if ( scene_manager_.getTargetObj() != nullptr )
+            {
+                scene_manager_.getTargetObj()->move(
+                    gfx::core::Vector3f( 0, Config::Camera::ObjMoveFactor, 0 ) );
+                scene_manager_.needUpdate() = true;
+            }
         }
         if ( isPressed( MoveObjDown ) )
         {
-            scene_manager_.getTargetObj()->move(
-                gfx::core::Vector3f( 0, -Config::Camera::ObjMoveFactor, 0 ) );
-            scene_manager_.needUpdate() = true;
+            if ( scene_manager_.getTargetObj() != nullptr )
+            {
+                scene_manager_.getTargetObj()->move(
+                    gfx::core::Vector3f( 0, -Config::Camera::ObjMoveFactor, 0 ) );
+                scene_manager_.needUpdate() = true;
+            }
         }
         if ( isPressed( MoveObjForward ) )
         {
-            scene_manager_.getTargetObj()->move(
-                gfx::core::Vector3f( 0, 0, -Config::Camera::ObjMoveFactor ) );
-            scene_manager_.needUpdate() = true;
+            if ( scene_manager_.getTargetObj() != nullptr )
+            {
+                scene_manager_.getTargetObj()->move(
+                    gfx::core::Vector3f( 0, 0, -Config::Camera::ObjMoveFactor ) );
+                scene_manager_.needUpdate() = true;
+            }
         }
         if ( isPressed( MoveObjBackward ) )
         {
-            scene_manager_.getTargetObj()->move(
-                gfx::core::Vector3f( 0, 0, Config::Camera::ObjMoveFactor ) );
-            scene_manager_.needUpdate() = true;
+            if ( scene_manager_.getTargetObj() != nullptr )
+            {
+                scene_manager_.getTargetObj()->move(
+                    gfx::core::Vector3f( 0, 0, Config::Camera::ObjMoveFactor ) );
+                scene_manager_.needUpdate() = true;
+            }
         }
 
         if ( isPressed( AddObj ) )
         {
-            std::cerr << "AddObj" << std::endl;
-            scene_manager_.needUpdate() = true;
+            auto new_obj_x = text_fields_[TextFieldCode::NewObjX]->strToDouble();
+            auto new_obj_y = text_fields_[TextFieldCode::NewObjY]->strToDouble();
+            auto new_obj_z = text_fields_[TextFieldCode::NewObjZ]->strToDouble();
+            auto new_obj_s = text_fields_[TextFieldCode::NewObjS]->strToDouble();
+
+            auto new_obj_r = text_fields_[TextFieldCode::NewObjR]->strToUint32();
+            auto new_obj_g = text_fields_[TextFieldCode::NewObjG]->strToUint32();
+            auto new_obj_b = text_fields_[TextFieldCode::NewObjB]->strToUint32();
+            auto new_obj_f = text_fields_[TextFieldCode::NewObjF]->strToUint32();
+
+            if ( new_obj_x.has_value() && new_obj_y.has_value() && new_obj_z.has_value() &&
+                 new_obj_s.has_value() && new_obj_r.has_value() && new_obj_g.has_value() &&
+                 new_obj_b.has_value() && new_obj_f.has_value() )
+            {
+                auto origin =
+                    gfx::core::Vector3f( new_obj_x.value(), new_obj_y.value(), new_obj_z.value() );
+
+                auto color =
+                    gfx::core::Color( new_obj_r.value(), new_obj_g.value(), new_obj_b.value() );
+
+                auto reflective_factor = new_obj_f.value();
+
+                model::Material material( color, reflective_factor );
+
+                switch ( scrollbar_.getCurActiveButton() )
+                {
+                    case ScrollBarButtonCode::Sphere:
+                        scene_manager_.addSphere( material, origin, new_obj_s.value() );
+                        break;
+                    case ScrollBarButtonCode::AABB:
+                        scene_manager_.addAABB( material,
+                                                origin,
+                                                gfx::core::Vector3f( new_obj_s.value(),
+                                                                     new_obj_s.value(),
+                                                                     new_obj_s.value() ) );
+                        break;
+                    case ScrollBarButtonCode::Plane:
+                        scene_manager_.addPlane( material, origin, { 0.0f, 1.0f, 0.0f } );
+                        break;
+                    default:
+                        break;
+                }
+
+                scene_manager_.needUpdate() = true;
+            }
         }
         if ( isPressed( CopyObj ) )
         {
-            std::cerr << "CopyObj" << std::endl;
-            float new_obj_x = text_fields_[TextFieldCode::NewObjX]->strToDouble();
-            float new_obj_y = text_fields_[TextFieldCode::NewObjY]->strToDouble();
-            float new_obj_z = text_fields_[TextFieldCode::NewObjZ]->strToDouble();
+            auto new_obj_x = text_fields_[TextFieldCode::NewObjX]->strToDouble();
+            auto new_obj_y = text_fields_[TextFieldCode::NewObjY]->strToDouble();
+            auto new_obj_z = text_fields_[TextFieldCode::NewObjZ]->strToDouble();
 
-            if ( !std::isnan( new_obj_x ) && !std::isnan( new_obj_y ) && !std::isnan( new_obj_z ) )
+            if ( new_obj_x.has_value() && new_obj_y.has_value() && new_obj_z.has_value() )
             {
-                scene_manager_.copyTargetObj( new_obj_x, new_obj_y, new_obj_z );
+                scene_manager_.copyTargetObj( new_obj_x.value(),
+                                              new_obj_y.value(),
+                                              new_obj_z.value() );
             }
 
             scene_manager_.needUpdate() = true;
@@ -316,18 +402,23 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     std::unique_ptr<gfx::ui::Button> buttons_[ButtonCount];
 
     enum TextFieldCode {
-        NewObjX = 0,
-        NewObjY = 1,
-        NewObjZ = 2,
+        NewObjX,
+        NewObjY,
+        NewObjZ,
+        NewObjS,
+        NewObjR,
+        NewObjG,
+        NewObjB,
+        NewObjF,
         TextFieldCount,
     };
 
     std::unique_ptr<gfx::ui::TextField> text_fields_[TextFieldCount];
 
     enum ScrollBarButtonCode {
-        Sphere = 0,
-        Plane  = 1,
-        AABB   = 2,
+        Sphere,
+        Plane,
+        AABB,
         ScrollBarButtonCodeCount,
     };
 
@@ -362,10 +453,11 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     }
 
     void
-    setupTextField( TextFieldCode code, const gfx::core::Vector2f& pos )
+    setupTextField( TextFieldCode code, const gfx::core::Vector2f& pos, const std::string& title )
     {
         text_fields_[code] = std::move(
-            std::make_unique<gfx::ui::TextField>( labels_font_,
+            std::make_unique<gfx::ui::TextField>( title,
+                                                  labels_font_,
                                                   pos,
                                                   Config::ControlPanel::TextField::Size ) );
         text_fields_[code]->parent_ = this;
