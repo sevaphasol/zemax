@@ -112,7 +112,7 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
         sum_light += light.calcColor( ctx.view_ray.getDir(),
                                       ctx.intersection_point,
                                       ctx.normal,
-                                      ctx.closest_object->getMaterial().color );
+                                      ctx.closest_object->getMaterial() );
     }
 
     sum_light.clamp( 0, 255 );
@@ -123,7 +123,7 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
 gfx::core::Color
 SceneManager::calcReflectedColor( IntersectionContext& ctx )
 {
-    // // // // std::cerr << ctx.normal.x << " " << ctx.normal.y << " " << ctx.normal.z <<
+    // // // // // std::cerr << ctx.normal.x << " " << ctx.normal.y << " " << ctx.normal.z <<
     // std::endl;
 
     gfx::core::Vector3f reflect_dir = ctx.view_ray.getDir().calcReflected(
@@ -180,8 +180,9 @@ SceneManager::calcPixelColor( uint row, uint col, const gfx::core::Color& backgr
 
     IntersectionContext ctx( view_ray, background_color );
 
+    gfx::core::Color ray_color = calcRayColor( ctx );
+
     return calcRayColor( ctx );
 }
-
 } // namespace model
 } // namespace zemax

@@ -2,12 +2,19 @@
 
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
+#include "zemax/model/primitives/impls/aabb.hpp"
+#include "zemax/model/primitives/impls/plane.hpp"
+#include "zemax/model/primitives/impls/sphere.hpp"
 #include "zemax/model/primitives/material.hpp"
 #include "zemax/model/primitives/primitive.hpp"
 #include "zemax/model/rendering/camera.hpp"
 #include "zemax/model/rendering/light.hpp"
 #include "zemax/model/rendering/ray.hpp"
+#include <assert.h>
+#include <iostream>
 #include <memory>
+#include <optional>
+#include <string>
 #include <vector>
 
 namespace zemax {
@@ -16,6 +23,76 @@ namespace model {
 class SceneManager {
   public:
     SceneManager( const gfx::core::Vector3f& camera_pos, float screen_width, float screen_height );
+
+    size_t
+    getObjectsCount()
+    {
+        return objects_.size();
+    }
+
+    struct ObjectInfo
+    {
+        gfx::core::Vector3f pos;
+        std::string         type_name;
+        size_t              objects_idx;
+    };
+
+    void
+    paint( int idx )
+    {
+        if ( idx >= 0 && idx <= objects_.size() )
+        {
+            objects_[idx]->paint();
+        }
+    }
+
+    void
+    revert_paint( int idx )
+    {
+        if ( idx >= 0 && idx <= objects_.size() )
+        {
+            objects_[idx]->revert_paint();
+        }
+    }
+
+    ObjectInfo
+    getObjectInfo( size_t idx )
+    {
+        auto* obj = objects_[idx].get();
+
+        std::string obj_name;
+
+        if ( typeid( *obj ).hash_code() == typeid( Sphere ).hash_code() )
+        {
+            obj_name = "Sphere";
+        } else if ( typeid( *obj ).hash_code() == typeid( Plane ).hash_code() )
+        {
+            obj_name = "Plane";
+        } else if ( typeid( *obj ).hash_code() == typeid( AABB ).hash_code() )
+        {
+            obj_name = "AABB";
+        } else
+        {
+            assert( false );
+        }
+
+        return { .pos = obj->getOrigin(), .type_name = obj_name, .objects_idx = idx };
+    }
+
+    std::optional<Primitive*>
+    getIntersectedObj( uint px, uint py )
+    {
+        Ray ray = camera_.emitRay( px, py );
+
+        IntersectionContext ctx( ray );
+
+        if ( !findClosestIntersection( ctx ) )
+        {
+            return std::nullopt;
+        }
+
+        return ctx.closest_object;
+    }
 
     bool&
     needUpdate()
@@ -34,6 +111,19 @@ class SceneManager {
               float               embedded_intensity,
               float               diffuse_intensity,
               float               glare_intensity );
+
+    void
+    deleteTargetObj()
+    {
+        for ( size_t i = 0; i < objects_.size(); ++i )
+        {
+            if ( objects_[i].get() == target_obj_ )
+            {
+                objects_.erase( objects_.begin() + i );
+                return;
+            }
+        }
+    }
 
     void
     addSphere( const Material& material, const gfx::core::Vector3f& center, float radius );
@@ -60,6 +150,18 @@ class SceneManager {
         return camera_;
     }
 
+    Primitive*
+    getTargetObj()
+    {
+        return target_obj_;
+    }
+
+    void
+    setTargetObj( Primitive* obj )
+    {
+        target_obj_ = obj;
+    }
+
   private:
     struct IntersectionContext
     {
@@ -67,6 +169,8 @@ class SceneManager {
             : view_ray( view_ray ), background_color( background_color )
         {
         }
+
+        IntersectionContext( const Ray& view_ray ) : view_ray( view_ray ) {}
 
         // IntersectionContext( const IntersectionContext& that )
         //     : background_color( that.background_color )
@@ -122,6 +226,7 @@ class SceneManager {
   private:
     bool need_update_ = true;
 
+    Primitive*                              target_obj_ = nullptr;
     std::vector<std::unique_ptr<Primitive>> objects_;
     std::vector<Light>                      lights_;
     Camera                                  camera_;

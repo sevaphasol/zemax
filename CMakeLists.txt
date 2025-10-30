@@ -18,4 +18,5 @@ add_subdirectory( gfxlib )
 target_link_libraries(zemax PRIVATE gfx)
 
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}")
+target_compile_options(zemax PRIVATE -O3)
 install(TARGETS zemax DESTINATION bin)

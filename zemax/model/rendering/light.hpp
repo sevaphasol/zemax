@@ -2,6 +2,7 @@
 
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
+#include "zemax/model/primitives/material.hpp"
 
 namespace zemax {
 namespace model {
@@ -20,11 +21,11 @@ class Light {
     calcColor( const gfx::core::Vector3f& ray,
                const gfx::core::Vector3f& point,
                const gfx::core::Vector3f& normal,
-               const gfx::core::Color&    color ) const;
+               const Material&            color ) const;
 
   private:
     gfx::core::Color
-    calcEmbeddedLight( const gfx::core::Color& color ) const;
+    calcEmbeddedLight( const Material& color ) const;
 
     float
     calcDiffuseLight( const gfx::core::Vector3f& light_ray,

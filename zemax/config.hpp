@@ -105,6 +105,12 @@ struct Config
                 static constexpr gfx::core::Vector2f Position = { 140.0f, 230.0f };
                 static constexpr const char*         Title    = "Rotate down";
             };
+
+            struct DelObj
+            {
+                static constexpr gfx::core::Vector2f Position = { 250.0f, 170.0f };
+                static constexpr const char*         Title    = "Delete obj";
+            };
         };
 
         struct ScrollBar

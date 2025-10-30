@@ -16,6 +16,7 @@ struct Material
     gfx::core::Color color             = gfx::core::Color::Transparent;
     float            refraction_factor = 0.0F;
     float            reflection_factor = 0.0F;
+    bool             painted           = false;
 };
 
 } // namespace model

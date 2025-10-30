@@ -19,6 +19,12 @@ class AABB : public Primitive {
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
+    const char*
+    getName() override final
+    {
+        return "AABB";
+    }
+
   private:
     gfx::core::Vector3f half_size_;
 };

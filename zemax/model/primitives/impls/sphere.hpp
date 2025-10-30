@@ -18,6 +18,12 @@ class Sphere : public Primitive {
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
+    const char*
+    getName() override final
+    {
+        return "Sphere";
+    }
+
   private:
     float radius_;
     float radius_sq_;

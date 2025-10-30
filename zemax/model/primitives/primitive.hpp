@@ -17,6 +17,33 @@ class Primitive {
     {
     }
 
+    virtual const char*
+    getName() = 0;
+
+    void
+    paint()
+    {
+        material_.painted = true;
+    }
+
+    void
+    revert_paint()
+    {
+        material_.painted = false;
+    }
+
+    void
+    setColor( gfx::core::Color color )
+    {
+        material_.color = color;
+    }
+
+    void
+    setMaterial( Material material )
+    {
+        material_ = material;
+    }
+
     Material
     getMaterial() const
     {
@@ -50,6 +77,8 @@ class Primitive {
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const = 0;
 
   private:
+    bool painted_;
+
     gfx::core::Vector3f origin_;
     Material            material_;
 };

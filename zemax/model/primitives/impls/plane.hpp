@@ -19,6 +19,12 @@ class Plane : public Primitive {
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
+    const char*
+    getName() override final
+    {
+        return "Plane";
+    }
+
   private:
     gfx::core::Vector3f normal_;
 };

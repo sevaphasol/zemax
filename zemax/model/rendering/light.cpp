@@ -1,6 +1,7 @@
 #include "zemax/model/rendering/light.hpp"
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
+#include "zemax/model/primitives/material.hpp"
 
 #include <iostream>
 
@@ -26,23 +27,24 @@ gfx::core::Color
 Light::calcColor( const gfx::core::Vector3f& ray,
                   const gfx::core::Vector3f& point,
                   const gfx::core::Vector3f& normal,
-                  const gfx::core::Color&    color ) const
+                  const Material&            mat ) const
 {
     gfx::core::Vector3f light_ray = pos_ - point;
 
-    gfx::core::Color embedded_light = calcEmbeddedLight( color );
+    gfx::core::Color embedded_light = calcEmbeddedLight( mat );
     gfx::core::Color diffuse_light  = calcDiffuseLight( light_ray, normal );
     gfx::core::Color glare_light    = calcGlareLight( light_ray, normal, ray );
 
-    // // // std::cerr << "normal = " << normal.x << " " << normal.y << " " << normal.z <<
+    // // // // std::cerr << "normal = " << normal.x << " " << normal.y << " " << normal.z <<
     // std::endl;
-    // // // std::cerr << "embedded_light = " << int( embedded_light.r ) << " " << int(
+    // // // // std::cerr << "embedded_light = " << int( embedded_light.r ) << " " << int(
     // embedded_light.g )
     //   << " " << int( embedded_light.b ) << std::endl;
-    // // // std::cerr << "diffuse_light = " << int( diffuse_light.r ) << " " << int(
+    // // // // std::cerr << "diffuse_light = " << int( diffuse_light.r ) << " " << int(
     // diffuse_light.g )
     //   << " " << int( diffuse_light.b ) << std::endl;
-    // // // std::cerr << "glare_light = " << int( glare_light.r ) << " " << int( glare_light.g ) <<
+    // // // // std::cerr << "glare_light = " << int( glare_light.r ) << " " << int( glare_light.g )
+    // <<
     // "
     // "
     //   << int( glare_light.b ) << std::endl;
@@ -51,9 +53,9 @@ Light::calcColor( const gfx::core::Vector3f& ray,
 }
 
 gfx::core::Color
-Light::calcEmbeddedLight( const gfx::core::Color& color ) const
+Light::calcEmbeddedLight( const Material& mat ) const
 {
-    return color * embedded_intensity_;
+    return ( mat.painted ) ? gfx::core::Color( 32, 32, 32 ) : mat.color * embedded_intensity_;
 }
 
 float
@@ -72,22 +74,24 @@ Light::calcGlareLight( const gfx::core::Vector3f& light_ray,
 {
     gfx::core::Vector3f reflected_ray = light_ray.calcReflected( normal );
 
-    // // // std::cerr << "view_ray = " << light_ray.x << " " << light_ray.y << " " << light_ray.z
+    // // // // std::cerr << "view_ray = " << light_ray.x << " " << light_ray.y << " " <<
+    // light_ray.z
     //   << std::endl;
-    // // // std::cerr << "light_ray = " << light_ray.x << " " << light_ray.y << " " << light_ray.z
+    // // // // std::cerr << "light_ray = " << light_ray.x << " " << light_ray.y << " " <<
+    // light_ray.z
     //   << std::endl;
-    // // // std::cerr << "normal = " << normal.x << " " << normal.y << " " << normal.z <<
+    // // // // std::cerr << "normal = " << normal.x << " " << normal.y << " " << normal.z <<
     // std::endl;
-    // // // std::cerr << "reflected_ray = " << reflected_ray.x << " " << reflected_ray.y << " "
+    // // // // std::cerr << "reflected_ray = " << reflected_ray.x << " " << reflected_ray.y << " "
     //   << reflected_ray.z << std::endl;
 
     float cos = calcCos( view_ray, reflected_ray );
 
-    // // // std::cerr << "cos = " << cos << std::endl;
+    // // // // std::cerr << "cos = " << cos << std::endl;
 
     float intensity = glare_intensity_ * float( std::pow( cos, 11 ) );
 
-    // // // std::cerr << "intensity = " << intensity << std::endl;
+    // // // // std::cerr << "intensity = " << intensity << std::endl;
 
     return std::max( 0.0f, intensity * 255 );
 }
