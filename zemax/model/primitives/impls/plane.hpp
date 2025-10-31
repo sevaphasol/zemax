@@ -31,6 +31,9 @@ class Plane : public Primitive {
         return "Plane";
     }
 
+    std::array<gfx::core::Vector3f, 8>
+    getCircumscribedAABB() const override final;
+
   private:
     gfx::core::Vector3f normal_;
 };

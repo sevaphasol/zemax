@@ -3,6 +3,7 @@
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector2.hpp"
 #include "gfx/core/vector3.hpp"
+#include <cstdint>
 #include <sys/types.h>
 
 namespace zemax {
@@ -23,27 +24,27 @@ struct Config
         static constexpr size_t            Width           = 1750.0f;
         static constexpr size_t            Height          = 900.0f;
         static constexpr const char* const Title           = "Zemax";
-        static constexpr gfx::core::Color  BackgroundColor = { 100, 100, 100 };
+        static constexpr gfx::core::Color  BackgroundColor = { 0, 0, 0 };
     };
 
     struct ControlPanel
     {
         static constexpr gfx::core::Vector2f Position        = { 50.0f, 50.0f };
         static constexpr gfx::core::Vector2f Size            = { 380.0f, 798.0f };
-        static constexpr gfx::core::Color    BackgroundColor = { 32, 32, 32 };
-        static constexpr gfx::core::Color    BorderColor     = { 255, 0, 0 };
+        static constexpr gfx::core::Color    BackgroundColor = { 18, 18, 18 };
+        static constexpr gfx::core::Color    BorderColor     = { 118, 185, 0 };
         static constexpr float               BorderThickness = 2.0f;
 
         struct Button
         {
             static constexpr gfx::core::Vector2f Size = { 100.0f, 50.0f };
 
-            static constexpr gfx::core::Color DefaultColor = { 64, 64, 64 };
-            static constexpr gfx::core::Color HoveredColor = { 96, 96, 96 };
-            static constexpr gfx::core::Color PressedColor = { 128, 128, 128 };
+            static constexpr gfx::core::Color DefaultColor = { 30, 30, 30 };
+            static constexpr gfx::core::Color HoveredColor = { 50, 70, 30 };
+            static constexpr gfx::core::Color PressedColor = { 100, 150, 0 };
 
             static constexpr const char*            FontName  = "assets/JetBrainsMono-Regular.ttf";
-            static constexpr const gfx::core::Color FontColor = gfx::core::Color::White;
+            static constexpr const gfx::core::Color FontColor = { 220, 220, 220 };
             static constexpr const size_t           FontSize  = 12;
 
             struct MvL
@@ -91,7 +92,7 @@ struct Config
             struct RtR
             {
                 static constexpr gfx::core::Vector2f Position = { 30.0f, 260.0f };
-                static constexpr const char*         Title    = "Rotate rigth";
+                static constexpr const char*         Title    = "Rotate right";
             };
 
             struct RtU
@@ -243,7 +244,17 @@ struct Config
     {
         static constexpr gfx::core::Vector2f Position        = { 500.0f, 50.0f };
         static constexpr gfx::core::Vector2f Size            = { 1200.0f, 800.0f };
-        static constexpr gfx::core::Color    BackgroundColor = { 16, 16, 16 };
+        static constexpr gfx::core::Color    BackgroundColor = { 10, 10, 10 };
+
+        struct ObjInfoPanel
+        {
+            static constexpr gfx::core::Vector2f Size             = { 215.0f, 65.0f };
+            static constexpr gfx::core::Color    FontColor        = gfx::core::Color::White;
+            static constexpr uint32_t            FontSize         = 12;
+            static constexpr gfx::core::Color    FillColor        = gfx::core::Color( 32, 32, 32 );
+            static constexpr gfx::core::Color    OutlineColor     = gfx::core::Color( 64, 64, 64 );
+            static constexpr float               OutlineThickness = 2.0f;
+        };
     };
 
     struct Camera

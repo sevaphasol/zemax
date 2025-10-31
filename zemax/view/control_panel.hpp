@@ -28,13 +28,14 @@ namespace view {
 
 class ControlPanel : public gfx::ui::ContainerWidget {
   public:
-    explicit ControlPanel( zemax::model::SceneManager& scene_manager )
+    explicit ControlPanel( const gfx::core::Font& font, zemax::model::SceneManager& scene_manager )
         : scene_manager_( scene_manager ),
+          font_( font ),
           camera_( scene_manager.getCamera() ),
           scrollbar_( Config::ControlPanel::ScrollBar::Position,
                       Config::ControlPanel::ScrollBar::Size )
     {
-        loadFont( Config::ControlPanel::Button::FontName );
+        setDraggable( true );
 
         setPosition( Config::ControlPanel::Position );
         setSize( Config::ControlPanel::Size );
@@ -139,6 +140,12 @@ class ControlPanel : public gfx::ui::ContainerWidget {
         setupScrollBarButton( ScrollBarButtonCode::Sphere, "Sphere" );
         setupScrollBarButton( ScrollBarButtonCode::Plane, "Plane" );
         setupScrollBarButton( ScrollBarButtonCode::AABB, "AABB" );
+    }
+
+    void
+    setFont( const gfx::core::Font& font )
+    {
+        font_ = font;
     }
 
     static std::string
@@ -297,7 +304,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
             }
         }
 
-        if ( isPressed( AddObj ) )
+        if ( isPressedJustNow( AddObj ) )
         {
             auto new_obj_x = text_fields_[TextFieldCode::NewObjX]->strToDouble();
             auto new_obj_y = text_fields_[TextFieldCode::NewObjY]->strToDouble();
@@ -307,7 +314,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
             auto new_obj_r = text_fields_[TextFieldCode::NewObjR]->strToUint32();
             auto new_obj_g = text_fields_[TextFieldCode::NewObjG]->strToUint32();
             auto new_obj_b = text_fields_[TextFieldCode::NewObjB]->strToUint32();
-            auto new_obj_f = text_fields_[TextFieldCode::NewObjF]->strToUint32();
+            auto new_obj_f = text_fields_[TextFieldCode::NewObjF]->strToDouble();
 
             if ( new_obj_x.has_value() && new_obj_y.has_value() && new_obj_z.has_value() &&
                  new_obj_s.has_value() && new_obj_r.has_value() && new_obj_g.has_value() &&
@@ -319,9 +326,9 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                 auto color =
                     gfx::core::Color( new_obj_r.value(), new_obj_g.value(), new_obj_b.value() );
 
-                auto reflective_factor = new_obj_f.value();
+                auto reflection_factor = new_obj_f.value();
 
-                model::Material material( color, reflective_factor );
+                model::Material material( color, reflection_factor );
 
                 switch ( scrollbar_.getCurActiveButton() )
                 {
@@ -342,10 +349,12 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                         break;
                 }
 
+                std::cerr << material.reflection_factor << std::endl;
+
                 scene_manager_.needUpdate() = true;
             }
         }
-        if ( isPressed( CopyObj ) )
+        if ( isPressedJustNow( CopyObj ) )
         {
             auto new_obj_x = text_fields_[TextFieldCode::NewObjX]->strToDouble();
             auto new_obj_y = text_fields_[TextFieldCode::NewObjY]->strToDouble();
@@ -360,7 +369,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
 
             scene_manager_.needUpdate() = true;
         }
-        if ( isPressed( DeleteObj ) )
+        if ( isPressedJustNow( DeleteObj ) )
         {
             scene_manager_.deleteTargetObj();
             scene_manager_.needUpdate() = true;
@@ -372,7 +381,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     }
 
   private:
-    gfx::core::Font labels_font_;
+    gfx::core::Font font_;
 
     enum ButtonCode {
         MoveLeft,
@@ -424,10 +433,10 @@ class ControlPanel : public gfx::ui::ContainerWidget {
 
     ScrollableButtonsWidget scrollbar_;
 
-    void
-    loadFont( const std::string& font_name )
+    bool
+    isPressedJustNow( ButtonCode code )
     {
-        labels_font_.loadFromFile( font_name );
+        return dynamic_cast<gfx::ui::Button*>( buttons_[code].get() )->isPressedJustNow();
     }
 
     bool
@@ -445,7 +454,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                                                Config::ControlPanel::Button::DefaultColor,
                                                Config::ControlPanel::Button::HoveredColor,
                                                Config::ControlPanel::Button::PressedColor,
-                                               labels_font_,
+                                               font_,
                                                title,
                                                Config::ControlPanel::Button::FontColor,
                                                Config::ControlPanel::Button::FontSize ) );
@@ -457,7 +466,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     {
         text_fields_[code] = std::move(
             std::make_unique<gfx::ui::TextField>( title,
-                                                  labels_font_,
+                                                  font_,
                                                   pos,
                                                   Config::ControlPanel::TextField::Size ) );
         text_fields_[code]->parent_ = this;
@@ -472,7 +481,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                                                Config::ControlPanel::Button::DefaultColor,
                                                Config::ControlPanel::Button::HoveredColor,
                                                Config::ControlPanel::Button::PressedColor,
-                                               labels_font_,
+                                               font_,
                                                label,
                                                Config::ControlPanel::Button::FontColor,
                                                Config::ControlPanel::Button::FontSize ) );

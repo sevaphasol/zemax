@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gfx/core/font.hpp"
 #include "gfx/ui/container_widget.hpp"
 #include "gfx/ui/widget.hpp"
 #include "zemax/config.hpp"
@@ -14,11 +15,13 @@ namespace view {
 class Zemax : public gfx::ui::ContainerWidget {
   public:
     explicit Zemax()
-        : scene_( Config::Scene::Position,
+        : font_( Config::Common::Font::Name ),
+          scene_( font_,
+                  Config::Scene::Position,
                   Config::Scene::Size,
                   Config::Scene::BackgroundColor,
                   Config::Camera::Position ),
-          panel_( scene_.getModel() )
+          panel_( font_, scene_.getModel() )
     {
     }
 
@@ -49,8 +52,9 @@ class Zemax : public gfx::ui::ContainerWidget {
     }
 
   private:
-    Scene        scene_;
-    ControlPanel panel_;
+    gfx::core::Font font_;
+    Scene           scene_;
+    ControlPanel    panel_;
 };
 
 } // namespace view

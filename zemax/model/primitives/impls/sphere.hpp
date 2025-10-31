@@ -30,6 +30,9 @@ class Sphere : public Primitive {
         return "Sphere";
     }
 
+    std::array<gfx::core::Vector3f, 8>
+    getCircumscribedAABB() const override final;
+
   private:
     float radius_;
     float radius_sq_;

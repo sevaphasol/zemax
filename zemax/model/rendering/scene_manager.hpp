@@ -157,6 +157,7 @@ class SceneManager {
             if ( objects_[i].get() == target_obj_ )
             {
                 objects_.erase( objects_.begin() + i );
+                target_obj_ = nullptr;
                 return;
             }
         }
@@ -187,8 +188,20 @@ class SceneManager {
         return camera_;
     }
 
+    const Camera&
+    getCamera() const
+    {
+        return camera_;
+    }
+
     Primitive*
     getTargetObj()
+    {
+        return target_obj_;
+    }
+
+    const Primitive*
+    getTargetObj() const
     {
         return target_obj_;
     }

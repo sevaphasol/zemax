@@ -56,5 +56,22 @@ Sphere::calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const
     return normal;
 }
 
+std::array<gfx::core::Vector3f, 8>
+Sphere::getCircumscribedAABB() const
+{
+    gfx::core::Vector3f c = getOrigin();
+
+    float r = radius_;
+
+    return { { { c.x - r, c.y - r, c.z - r },
+               { c.x + r, c.y - r, c.z - r },
+               { c.x - r, c.y + r, c.z - r },
+               { c.x + r, c.y + r, c.z - r },
+               { c.x - r, c.y - r, c.z + r },
+               { c.x + r, c.y - r, c.z + r },
+               { c.x - r, c.y + r, c.z + r },
+               { c.x + r, c.y + r, c.z + r } } };
+}
+
 } // namespace model
 } // namespace zemax

@@ -26,7 +26,7 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
 
         border_.setSize( size );
         border_.setFillColor( gfx::core::Color::Transparent );
-        border_.setOutlineColor( gfx::core::Color( 96, 96, 96 ) );
+        border_.setOutlineColor( gfx::core::Color( 118, 185, 0 ) );
         border_.setOutlineThickness( 2.f );
 
         scroll_bar_.parent_ = this;

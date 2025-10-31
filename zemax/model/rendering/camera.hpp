@@ -3,6 +3,7 @@
 #include "gfx/core/vector2.hpp"
 #include "gfx/core/vector3.hpp"
 #include "zemax/model/rendering/ray.hpp"
+#include <optional>
 
 namespace zemax {
 namespace model {
@@ -22,6 +23,9 @@ class Camera {
 
     Ray
     emitRay( uint pixel_x, uint pixel_y ) const;
+
+    std::optional<gfx::core::Vector2f>
+    projectToScreen( const gfx::core::Vector3f& world_pos ) const;
 
     void
     move( const gfx::core::Vector3f& delta );

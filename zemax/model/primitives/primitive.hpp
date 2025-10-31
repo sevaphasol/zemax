@@ -4,8 +4,10 @@
 #include "gfx/core/vector3.hpp"
 #include "zemax/model/primitives/material.hpp"
 #include "zemax/model/rendering/ray.hpp"
+#include <array>
 #include <memory>
 #include <optional>
+#include <vector>
 
 namespace zemax {
 namespace model {
@@ -85,6 +87,9 @@ class Primitive {
 
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const = 0;
+
+    virtual std::array<gfx::core::Vector3f, 8>
+    getCircumscribedAABB() const = 0;
 
   private:
     bool painted_;

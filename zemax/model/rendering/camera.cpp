@@ -1,5 +1,7 @@
 #include "zemax/model/rendering/camera.hpp"
+#include "gfx/core/vector2.hpp"
 #include "zemax/config.hpp"
+#include <optional>
 
 namespace zemax {
 namespace model {
@@ -31,6 +33,29 @@ Camera::emitRay( uint pixel_x, uint pixel_y ) const
     gfx::core::Vector3f ray_dir = x3d * hor_ort_ + y3d * ver_ort_ + fwd_ort_;
 
     return Ray( ray_dir, pos_ );
+}
+
+std::optional<gfx::core::Vector2f>
+Camera::projectToScreen( const gfx::core::Vector3f& world_pos ) const
+{
+    gfx::core::Vector3f bt_ray = world_pos - pos_;
+
+    float x = scalarMul( bt_ray, hor_ort_ );
+    float y = scalarMul( bt_ray, ver_ort_ );
+    float z = scalarMul( bt_ray, fwd_ort_ );
+
+    if ( std::abs( z ) < 1e-6f )
+    {
+        return std::nullopt;
+    }
+
+    float x_n = x / z;
+    float y_n = y / z;
+
+    float px = ( ( x_n / fov_ + 1.0f ) / 2 ) * screen_width_ - 0.5f;
+    float py = ( ( ( y_n / fov_ ) / aspect_ratio_ - 1.0f ) / -2 ) * screen_height_ - 0.5f;
+
+    return gfx::core::Vector2f( px, py );
 }
 
 void

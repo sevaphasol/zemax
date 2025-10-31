@@ -1,41 +1,44 @@
 #pragma once
 
-#include "gfx/core/vector3.hpp"
 #include "zemax/model/primitives/primitive.hpp"
 #include "zemax/model/rendering/ray.hpp"
+#include <memory>
+#include <optional>
 
 namespace zemax {
 namespace model {
 
-class AABB : public Primitive {
+class Torus : public Primitive {
   public:
-    AABB( const Material&            material,
-          const gfx::core::Vector3f& center,
-          const gfx::core::Vector3f& half_size );
+    Torus( const Material&            material,
+           const gfx::core::Vector3f& center,
+           float                      major_radius,
+           float                      minor_radius );
 
-    virtual std::optional<Primitive::IntersectionInfo>
+    std::optional<Primitive::IntersectionInfo>
     calcRayIntersection( const Ray& ray ) const override final;
 
-    virtual gfx::core::Vector3f
+    gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
     std::unique_ptr<Primitive>
     clone() const override
     {
-        return std::make_unique<AABB>( *this );
+        return std::make_unique<Torus>( *this );
     }
 
     const char*
     getName() override final
     {
-        return "AABB";
+        return "Torus";
     }
 
-    std::array<gfx::core::Vector3f, 8>
+    virtual std::array<gfx::core::Vector3f, 8>
     getCircumscribedAABB() const override final;
 
   private:
-    gfx::core::Vector3f half_size_;
+    float major_radius_;
+    float minor_radius_;
 };
 
 } // namespace model
