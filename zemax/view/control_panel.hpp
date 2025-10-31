@@ -349,8 +349,6 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                         break;
                 }
 
-                std::cerr << material.reflection_factor << std::endl;
-
                 scene_manager_.needUpdate() = true;
             }
         }

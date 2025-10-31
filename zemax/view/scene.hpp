@@ -12,6 +12,7 @@
 
 #include "gfx/ui/event.hpp"
 #include "zemax/config.hpp"
+#include "zemax/model/primitives/material.hpp"
 #include "zemax/model/primitives/primitive.hpp"
 #include "zemax/model/rendering/camera.hpp"
 #include "zemax/model/rendering/scene_manager.hpp"
@@ -55,6 +56,9 @@ class Scene : public gfx::ui::Widget {
         model_.addLight( gfx::core::Vector3f( 3, 3, -3 ), 1.0, 0.3, 0.9 );
         model_.addLight( gfx::core::Vector3f( 0, 0, -11 ), 0.2, 0.3, 0.9 );
 
+        // model_.addTorus( model::Material( gfx::core::Color( 118, 185, 0 ) ), { 0, 0, -5 }, 1, 2
+        // );
+
         model_.addAABB( model::Material( gfx::core::Color( 255, 8, 8 ), 0.8f ),
                         gfx::core::Vector3f( -2, 1, -8 ),
                         gfx::core::Vector3f( 0.75, 0.75, -6.75 ) );
@@ -75,7 +79,8 @@ class Scene : public gfx::ui::Widget {
                           gfx::core::Vector3f( 0, 3, -16 ),
                           1.5 );
 
-        // model_.addAABB( model::Material( gfx::core::Color( 118, 185, 0 ), 0.9f ),
+        // model_.addAABB( model::Material( gfx::core::Color( 118, 185, 0 ), 0.9f
+        // ),
         //                 gfx::core::Vector3f( 0, -1, -8 ),
         //                 { 1.5, 0.5, 1.5 } );
 
@@ -91,7 +96,8 @@ class Scene : public gfx::ui::Widget {
                         gfx::core::Vector3f( 0, 0, -18 ),
                         { 3, 3, 0.1 } );
 
-        // model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f ),
+        // model_.addSphere( model::Material( gfx::core::Color( 8, 32, 8 ), 0.3f
+        // ),
         //   gfx::core::Vector3f( -2, 1, -1 ),
         //   1.5 );
 
@@ -101,7 +107,15 @@ class Scene : public gfx::ui::Widget {
         model_.addAABB( model::Material( gfx::core::Color( 58, 90, 0 ) ),
                         gfx::core::Vector3f( 0, 5.0f, -12 ),
                         gfx::core::Vector3f( 5.0f, 0.1, 5.0f ) );
-        // model_.addPlane( model::Material( gfx::core::Color( 1, 8, 127 ), 0.5f ),
+
+        // model_.addHexPrism( model::Material( gfx::core::Color( 32, 255, 32 ), 0.3f ),
+        // gfx::core::Vector3f( -3, 0, -6 ),
+        // 1.0f, // R
+        // 2.0f  // r
+        // );
+
+        // model_.addPlane( model::Material( gfx::core::Color( 1, 8, 127 ), 0.5f
+        // ),
         //  gfx::core::Vector3f( -5, -5, -5 ),
         //  gfx::core::Vector3f( 1, 1, 1 ) );
     }
@@ -139,9 +153,6 @@ class Scene : public gfx::ui::Widget {
         auto py = event.info.mouse_button.y - getAbsPos().y;
 
         model::Primitive* obj = model_.getIntersectedObj( px, py );
-
-        std::cerr << model_.getTargetObj() << std::endl;
-        std::cerr << obj << std::endl;
 
         // if ( model_.getTargetObj() != nullptr )
         // {

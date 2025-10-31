@@ -58,12 +58,8 @@ class SceneManager {
     void
     copyTargetObj( float new_obj_x, float new_obj_y, float new_obj_z )
     {
-        std::cerr << __PRETTY_FUNCTION__ << std::endl;
-        std::cerr << new_obj_x << " " << new_obj_y << " " << new_obj_z << std::endl;
-
         if ( target_obj_ == nullptr )
         {
-            std::cerr << "copyTargetObj: no target object set" << std::endl;
             return;
         }
 
@@ -175,6 +171,18 @@ class SceneManager {
     addAABB( const Material&            material,
              const gfx::core::Vector3f& center,
              const gfx::core::Vector3f& bounds );
+
+    void
+    addHexPrism( const Material&            material,
+                 const gfx::core::Vector3f& center,
+                 float                      radius,
+                 float                      height );
+
+    void
+    addTorus( const Material&            material,
+              const gfx::core::Vector3f& center,
+              float                      minor_radius,
+              float                      major_radius );
 
     void
     addCube( const Material& material, const gfx::core::Vector3f& center, float side );

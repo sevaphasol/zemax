@@ -1,4 +1,3 @@
-
 /*
 
 Spizheno s https://iquilezles.org/articles/intersectors/
@@ -57,10 +56,10 @@ torIntersect( const gfx::core::Vector3f& ro, const gfx::core::Vector3f& rd, floa
     const float n = scalarMul( ro, rd );
     const float k = ( m + Ra2 - ra2 ) * 0.5f;
 
-    const float k3 = n;
-    const float k2 = n * n - Ra2 * ( rd.x * rd.x + rd.y * rd.y ) + k;
-    const float k1 = n * k - Ra2 * ( rd.x * ro.x + rd.y * ro.y );
-    const float k0 = k * k - Ra2 * ( ro.x * ro.x + ro.y * ro.y );
+    float k3 = n;
+    float k2 = n * n - Ra2 * ( rd.x * rd.x + rd.y * rd.y ) + k;
+    float k1 = n * k - Ra2 * ( rd.x * ro.x + rd.y * ro.y );
+    float k0 = k * k - Ra2 * ( ro.x * ro.x + ro.y * ro.y );
 
     float po = 1.0f;
     float t0 = std::numeric_limits<float>::max();
@@ -75,6 +74,7 @@ torIntersect( const gfx::core::Vector3f& ro, const gfx::core::Vector3f& rd, floa
         k1 *= inv_k0;
         k2 *= inv_k0;
         k3 *= inv_k0;
+        k0 = 1.0f;
     }
 
     const float c2 = ( 2.0f * k2 - 3.0f * k3 * k3 ) / 3.0f;
@@ -125,12 +125,10 @@ torIntersect( const gfx::core::Vector3f& ro, const gfx::core::Vector3f& rd, floa
     if ( d2 < 0.0f )
         return t0;
     const float d1 = std::sqrt( d2 );
-    const float h1 = ( w - 2.0f * c2 + c1 / ( 2.0f * d1 ) >= 0.0f )
-                         ? std::sqrt( w - 2.0f * c2 + c1 / ( 2.0f * d1 ) )
-                         : 0.0f;
-    const float h2 = ( w - 2.0f * c2 - c1 / ( 2.0f * d1 ) >= 0.0f )
-                         ? std::sqrt( w - 2.0f * c2 - c1 / ( 2.0f * d1 ) )
-                         : 0.0f;
+    const float h1 =
+        ( w - 2.0f * c2 + c1 / d1 >= 0.0f ) ? std::sqrt( w - 2.0f * c2 + c1 / d1 ) : 0.0f;
+    const float h2 =
+        ( w - 2.0f * c2 - c1 / d1 >= 0.0f ) ? std::sqrt( w - 2.0f * c2 - c1 / d1 ) : 0.0f;
 
     float t1 = -d1 - h1 - k3;
     float t2 = -d1 + h1 - k3;
@@ -199,18 +197,20 @@ Torus::calcNormal( const gfx::core::Vector3f& point, bool /*inside_object*/ ) co
 std::array<gfx::core::Vector3f, 8>
 Torus::getCircumscribedAABB() const
 {
-    gfx::core::Vector3f c = getOrigin();
-    float               r = minor_radius_;
-    float               R = major_radius_;
+    auto c = getOrigin();
 
-    return { { { c.x - h.x, c.y - h.y, c.z - h.z },
-               { c.x + h.x, c.y - h.y, c.z - h.z },
-               { c.x - h.x, c.y + h.y, c.z - h.z },
-               { c.x + h.x, c.y + h.y, c.z - h.z },
-               { c.x - h.x, c.y - h.y, c.z + h.z },
-               { c.x + h.x, c.y - h.y, c.z + h.z },
-               { c.x - h.x, c.y + h.y, c.z + h.z },
-               { c.x + h.x, c.y + h.y, c.z + h.z } } };
+    float dx = major_radius_ + minor_radius_;
+    float dy = major_radius_ + minor_radius_;
+    float dz = minor_radius_;
+
+    return { { { c.x - dx, c.y - dy, c.z - dz },
+               { c.x + dx, c.y - dy, c.z - dz },
+               { c.x - dx, c.y + dy, c.z - dz },
+               { c.x + dx, c.y + dy, c.z - dz },
+               { c.x - dx, c.y - dy, c.z + dz },
+               { c.x + dx, c.y - dy, c.z + dz },
+               { c.x - dx, c.y + dy, c.z + dz },
+               { c.x + dx, c.y + dy, c.z + dz } } };
 }
 
 } // namespace model

@@ -134,9 +134,6 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
             window.draw( *buttons_[cur_active_button_], widget_transform );
         }
 
-        // // std::cerr << border_.getSize().x << " " << border_.getSize().y << std::endl;
-        // // std::cerr << border_.getPosition().x << " " << border_.getPosition().y << std::endl;
-
         window.draw( border_, widget_transform );
     }
 
