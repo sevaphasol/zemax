@@ -2,8 +2,10 @@
 #include "gfx/core/color.hpp"
 #include "gfx/core/vector3.hpp"
 #include "zemax/model/primitives/impls/aabb.hpp"
+#include "zemax/model/primitives/impls/hex_prism.hpp"
 #include "zemax/model/primitives/impls/plane.hpp"
 #include "zemax/model/primitives/impls/sphere.hpp"
+#include "zemax/model/primitives/impls/torus.hpp"
 #include "zemax/model/primitives/material.hpp"
 #include "zemax/model/primitives/primitive.hpp"
 #include "zemax/model/rendering/camera.hpp"
@@ -50,6 +52,24 @@ SceneManager::addAABB( const Material&            material,
                        const gfx::core::Vector3f& bounds )
 {
     objects_.push_back( std::make_unique<AABB>( material, center, bounds ) );
+}
+
+void
+SceneManager::addHexPrism( const Material&            material,
+                           const gfx::core::Vector3f& center,
+                           float                      radius,
+                           float                      height )
+{
+    objects_.push_back( std::make_unique<HexPrism>( material, center, radius, height ) );
+}
+
+void
+SceneManager::addTorus( const Material&            material,
+                        const gfx::core::Vector3f& center,
+                        float                      minor_radius,
+                        float                      major_radius )
+{
+    objects_.push_back( std::make_unique<Torus>( material, center, minor_radius, major_radius ) );
 }
 
 void
@@ -112,7 +132,7 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
         sum_light += light.calcColor( ctx.view_ray.getDir(),
                                       ctx.intersection_point,
                                       ctx.normal,
-                                      ctx.closest_object->getMaterial().color );
+                                      ctx.closest_object->getMaterial() );
     }
 
     sum_light.clamp( 0, 255 );
@@ -123,9 +143,6 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
 gfx::core::Color
 SceneManager::calcReflectedColor( IntersectionContext& ctx )
 {
-    // // // // std::cerr << ctx.normal.x << " " << ctx.normal.y << " " << ctx.normal.z <<
-    // std::endl;
-
     gfx::core::Vector3f reflect_dir = ctx.view_ray.getDir().calcReflected(
         ctx.normal ); // ctx.view_ray.getDir().calcReflected( ctx.normal );
                       // ctx.view_ray.getDir() -
@@ -180,8 +197,9 @@ SceneManager::calcPixelColor( uint row, uint col, const gfx::core::Color& backgr
 
     IntersectionContext ctx( view_ray, background_color );
 
+    gfx::core::Color ray_color = calcRayColor( ctx );
+
     return calcRayColor( ctx );
 }
-
 } // namespace model
 } // namespace zemax

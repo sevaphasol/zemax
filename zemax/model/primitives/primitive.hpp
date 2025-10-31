@@ -4,7 +4,10 @@
 #include "gfx/core/vector3.hpp"
 #include "zemax/model/primitives/material.hpp"
 #include "zemax/model/rendering/ray.hpp"
+#include <array>
+#include <memory>
 #include <optional>
+#include <vector>
 
 namespace zemax {
 namespace model {
@@ -17,6 +20,36 @@ class Primitive {
     {
     }
 
+    virtual const char*
+    getName() = 0;
+
+    virtual std::unique_ptr<Primitive>
+    clone() const = 0;
+
+    void
+    paint()
+    {
+        material_.painted = true;
+    }
+
+    void
+    revert_paint()
+    {
+        material_.painted = false;
+    }
+
+    void
+    setColor( gfx::core::Color color )
+    {
+        material_.color = color;
+    }
+
+    void
+    setMaterial( Material material )
+    {
+        material_ = material;
+    }
+
     Material
     getMaterial() const
     {
@@ -27,6 +60,12 @@ class Primitive {
     getOrigin() const
     {
         return origin_;
+    }
+
+    void
+    setOrigin( const gfx::core::Vector3f& new_origin )
+    {
+        origin_ = new_origin;
     }
 
     virtual void
@@ -49,7 +88,12 @@ class Primitive {
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const = 0;
 
+    virtual std::array<gfx::core::Vector3f, 8>
+    getCircumscribedAABB() const = 0;
+
   private:
+    bool painted_;
+
     gfx::core::Vector3f origin_;
     Material            material_;
 };

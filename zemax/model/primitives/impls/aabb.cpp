@@ -78,5 +78,21 @@ AABB::calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const
     return gfx::core::Vector3f{ 0.0f, 0.0f, ( local.z >= 0.0f ) ? 1.0f : -1.0f };
 }
 
+std::array<gfx::core::Vector3f, 8>
+AABB::getCircumscribedAABB() const
+{
+    gfx::core::Vector3f c = getOrigin();
+    gfx::core::Vector3f h = half_size_;
+
+    return { { { c.x - h.x, c.y - h.y, c.z - h.z },
+               { c.x + h.x, c.y - h.y, c.z - h.z },
+               { c.x - h.x, c.y + h.y, c.z - h.z },
+               { c.x + h.x, c.y + h.y, c.z - h.z },
+               { c.x - h.x, c.y - h.y, c.z + h.z },
+               { c.x + h.x, c.y - h.y, c.z + h.z },
+               { c.x - h.x, c.y + h.y, c.z + h.z },
+               { c.x + h.x, c.y + h.y, c.z + h.z } } };
+}
+
 } // namespace model
 } // namespace zemax

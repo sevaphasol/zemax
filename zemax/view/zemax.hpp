@@ -1,11 +1,13 @@
 #pragma once
 
-#include "gfx/ui/widget/container.hpp"
+#include "gfx/core/font.hpp"
+#include "gfx/ui/container_widget.hpp"
+#include "gfx/ui/widget.hpp"
 #include "zemax/config.hpp"
 #include "zemax/view/control_panel.hpp"
 #include "zemax/view/scene.hpp"
-
-#include <iostream>
+#include <any>
+#include <memory>
 
 namespace zemax {
 namespace view {
@@ -13,28 +15,27 @@ namespace view {
 class Zemax : public gfx::ui::ContainerWidget {
   public:
     explicit Zemax()
-        : scene_( Config::Scene::Position,
+        : font_( Config::Common::Font::Name ),
+          scene_( font_,
+                  Config::Scene::Position,
                   Config::Scene::Size,
                   Config::Scene::BackgroundColor,
                   Config::Camera::Position ),
-          gfx::ui::ContainerWidget( { 0, 0 }, { Config::Window::Width, Config::Window::Height } ),
-          panel_( scene_.getModel() )
+          panel_( font_, scene_.getModel() )
     {
     }
 
     ~Zemax() = default;
 
     bool
-    propagate( const gfx::ui::Event& event ) override final
+    propagateEventToChildren( const gfx::ui::Event& event ) override
     {
-        std::cerr << "propagate " << typeid( event ).name() << std::endl;
-
-        if ( event.apply( &scene_ ) )
+        if ( event.apply( &panel_ ) )
         {
             return true;
         }
 
-        if ( event.apply( &panel_ ) )
+        if ( event.apply( &scene_ ) )
         {
             return true;
         }
@@ -43,23 +44,17 @@ class Zemax : public gfx::ui::ContainerWidget {
     }
 
     void
-    drawSelf( gfx::core::Window& window, gfx::core::Transform transform ) const override
+    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override
     {
-    }
-
-    void
-    drawChildren( gfx::core::Window& window, gfx::core::Transform transform ) const override
-    {
-        std::cerr << __PRETTY_FUNCTION__ << ":" << getPosition().x << " " << getPosition().y
-                  << std::endl;
-
-        window.draw( scene_ );
-        window.draw( panel_ );
+        gfx::core::Transform widget_transform = transform.combine( getTransform() );
+        window.draw( scene_, widget_transform );
+        window.draw( panel_, widget_transform );
     }
 
   private:
-    Scene        scene_;
-    ControlPanel panel_;
+    gfx::core::Font font_;
+    Scene           scene_;
+    ControlPanel    panel_;
 };
 
 } // namespace view

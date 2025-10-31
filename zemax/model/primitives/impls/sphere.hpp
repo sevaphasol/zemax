@@ -18,6 +18,21 @@ class Sphere : public Primitive {
     virtual gfx::core::Vector3f
     calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const override final;
 
+    std::unique_ptr<Primitive>
+    clone() const override
+    {
+        return std::make_unique<Sphere>( *this );
+    }
+
+    const char*
+    getName() override final
+    {
+        return "Sphere";
+    }
+
+    std::array<gfx::core::Vector3f, 8>
+    getCircumscribedAABB() const override final;
+
   private:
     float radius_;
     float radius_sq_;

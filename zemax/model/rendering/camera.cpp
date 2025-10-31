@@ -1,28 +1,61 @@
 #include "zemax/model/rendering/camera.hpp"
+#include "gfx/core/vector2.hpp"
+#include "zemax/config.hpp"
+#include <optional>
 
 namespace zemax {
 namespace model {
 
-Camera::Camera( const gfx::core::Vector3f& pos, float screen_width, float screen_height )
+Camera::Camera( const gfx::core::Vector3f& pos, float screen_width, float screen_height, float fov )
     : pos_( pos ),
       screen_width_( screen_width ),
       screen_height_( screen_height ),
       aspect_ratio_( screen_height / screen_width ),
       hor_ort_( 1, 0, 0 ),
       ver_ort_( 0, 1, 0 ),
-      fwd_ort_( 0, 0, -1 )
+      fwd_ort_( 0, 0, -1 ),
+      fov_( fov )
 {
+}
+
+void
+Camera::scale( float scale_factor )
+{
+    fov_ += fov_ * scale_factor;
 }
 
 Ray
 Camera::emitRay( uint pixel_x, uint pixel_y ) const
 {
-    float x3d = ( 2 * ( ( float( pixel_x ) + 0.5 ) / screen_width_ ) - 1 );
-    float y3d = ( -2 * ( ( float( pixel_y ) + 0.5 ) / screen_height_ ) + 1 ) * aspect_ratio_;
+    float x3d = ( 2 * ( ( float( pixel_x ) + 0.5 ) / screen_width_ ) - 1 ) * fov_;
+    float y3d = ( -2 * ( ( float( pixel_y ) + 0.5 ) / screen_height_ ) + 1 ) * aspect_ratio_ * fov_;
 
     gfx::core::Vector3f ray_dir = x3d * hor_ort_ + y3d * ver_ort_ + fwd_ort_;
 
     return Ray( ray_dir, pos_ );
+}
+
+std::optional<gfx::core::Vector2f>
+Camera::projectToScreen( const gfx::core::Vector3f& world_pos ) const
+{
+    gfx::core::Vector3f bt_ray = world_pos - pos_;
+
+    float x = scalarMul( bt_ray, hor_ort_ );
+    float y = scalarMul( bt_ray, ver_ort_ );
+    float z = scalarMul( bt_ray, fwd_ort_ );
+
+    if ( std::abs( z ) < 1e-6f )
+    {
+        return std::nullopt;
+    }
+
+    float x_n = x / z;
+    float y_n = y / z;
+
+    float px = ( ( x_n / fov_ + 1.0f ) / 2 ) * screen_width_ - 0.5f;
+    float py = ( ( ( y_n / fov_ ) / aspect_ratio_ - 1.0f ) / -2 ) * screen_height_ - 0.5f;
+
+    return gfx::core::Vector2f( px, py );
 }
 
 void

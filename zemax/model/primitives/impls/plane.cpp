@@ -50,5 +50,22 @@ Plane::calcNormal( const gfx::core::Vector3f& point, bool inside_object ) const
     return normal_;
 }
 
+std::array<gfx::core::Vector3f, 8>
+Plane::getCircumscribedAABB() const
+{
+    gfx::core::Vector3f c = getOrigin();
+
+    float h = 1.0f;
+
+    return { { { c.x - h, c.y - h, c.z - h },
+               { c.x + h, c.y - h, c.z - h },
+               { c.x - h, c.y + h, c.z - h },
+               { c.x + h, c.y + h, c.z - h },
+               { c.x - h, c.y - h, c.z + h },
+               { c.x + h, c.y - h, c.z + h },
+               { c.x - h, c.y + h, c.z + h },
+               { c.x + h, c.y + h, c.z + h } } };
+}
+
 } // namespace model
 } // namespace zemax
