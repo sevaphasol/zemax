@@ -1,8 +1,8 @@
 #pragma once
 
+#include "custom-hui-impl/container_widget.hpp"
+#include "custom-hui-impl/widget.hpp"
 #include "gfx/core/font.hpp"
-#include "gfx/ui/container_widget.hpp"
-#include "gfx/ui/widget.hpp"
 #include "zemax/config.hpp"
 #include "zemax/view/control_panel.hpp"
 #include "zemax/view/scene.hpp"
@@ -12,7 +12,7 @@
 namespace zemax {
 namespace view {
 
-class Zemax : public gfx::ui::ContainerWidget {
+class Zemax : public hui::ContainerWidget {
   public:
     explicit Zemax()
         : font_( Config::Common::Font::Name ),
@@ -28,7 +28,7 @@ class Zemax : public gfx::ui::ContainerWidget {
     ~Zemax() = default;
 
     bool
-    propagateEventToChildren( const gfx::ui::Event& event ) override
+    propagateEventToChildren( const hui::Event& event ) override
     {
         if ( event.apply( &panel_ ) )
         {

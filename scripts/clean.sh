@@ -3,4 +3,5 @@
 rm -rf .cache
 rm -rf build
 rm -rf bin
+rm -rf lib
 rm compile_commands.json
