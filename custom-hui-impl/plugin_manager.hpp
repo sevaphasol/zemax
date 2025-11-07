@@ -6,6 +6,8 @@
 #include <iostream>
 #include <stdexcept>
 
+#include "dr4/math/rect.hpp"
+#include "dr4/window.hpp"
 #include "misc/dr4_ifc.hpp"
 
 namespace cum {
@@ -19,6 +21,42 @@ class PluginManager {
     {
         return drawlib_backend_;
     }
+
+    const dr4::Window*
+    getWindow() const
+    {
+        return window_;
+    }
+
+    dr4::Window*
+    getWindow()
+    {
+        return window_;
+    }
+
+    void
+    setWindow( dr4::Window* window )
+    {
+        window_ = window;
+    }
+
+    // auto
+    // getGetBounds()
+    // {
+    // return get_bounds_;
+    // }
+
+    //     void
+    //     loadGetBounds()
+    //     {
+    //         auto* get_bounds_func = dlsym( drawlib_, "_ZNK3dr44Text9GetBoundsEv" );
+    //         if ( get_bounds_func == nullptr )
+    //         {
+    //             std::cerr << "Couldn't load Text::GetBounds() symbol" << std::endl;
+    //         }
+    //
+    //         get_bounds_ = reinterpret_cast<dr4::Rect2f ( dr4::Text::* )()>( get_bounds_func );
+    //     }
 
     void
     loadDrawLib( const char* name )
@@ -48,6 +86,9 @@ class PluginManager {
 
   private:
     void* drawlib_; // Library for drawing graphics
+
+    dr4::Window* window_;
+    // dr4::Rect2f ( dr4::Text::*get_bounds_ )();
 
     dr4::DR4Backend* drawlib_backend_;
 };

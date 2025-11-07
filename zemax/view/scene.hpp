@@ -1,8 +1,11 @@
 #pragma once
 
+#include "custom-hui-impl/widget.hpp"
+#include "dr4/texture.hpp"
 #include "gfx/core/color.hpp"
 #include "gfx/core/font.hpp"
 #include "gfx/core/primitive_type.hpp"
+#include "gfx/core/rect.hpp"
 #include "gfx/core/rectangle_shape.hpp"
 #include "gfx/core/text.hpp"
 #include "gfx/core/vector2.hpp"
@@ -27,34 +30,56 @@
 namespace zemax {
 namespace view {
 
-class Scene : public gfx::ui::Widget {
+class Scene : public hui::Widget {
   public:
     ~Scene() = default;
 
-    explicit Scene( const gfx::core::Font&     font,
-                    const gfx::core::Vector2f& pos,
-                    const gfx::core::Vector2f& size,
-                    const gfx::core::Color&    background_color,
+    explicit Scene( cum::PluginManager*        pm,
+                    const dr4::Font*           font,
+                    const dr4::Vec2f&          pos,
+                    const dr4::Vec2f&          size,
+                    const dr4::Color&          background_color,
                     const gfx::core::Vector3f& camera_pos )
-        : gfx::ui::Widget( pos, size ),
+        : hui::Widget( pm, pos, size ),
           model_( zemax::Config::Camera::Position, size.x, size.y ),
           background_color_( background_color ),
-          info_panel_( font, Config::Scene::ObjInfoPanel::Size ),
-          pixels_( size.x * size.y )
+          info_panel_( pm, font, Config::Scene::ObjInfoPanel::Size )
     {
-        info_panel_.parent_ = this;
+        // texture_ = window->CreateTexture();
+        //
+        // texture_->SetSize( zemax::Config::Scene::Size );
 
-        camera_pos_text_.setFont( font );
-        camera_pos_text_.setFillColor( gfx::core::Color::White );
-        camera_pos_text_.setCharacterSize( 16 );
+        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
 
-        border_.setSize( size );
-        border_.setFillColor( gfx::core::Color::Transparent );
-        border_.setOutlineColor( { 118, 185, 0 } );
-        border_.setOutlineThickness( 2.0f );
+        // std::cerr << pixels_ << std::endl;
+
+        pixels_ = window_->CreateImage();
+
+        pixels_->SetSize( size );
+
+        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+
+        info_panel_.setParent( this );
+
+        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+
+        camera_pos_text_.font     = font;
+        camera_pos_text_.color    = { 255, 255, 255, 255 };
+        camera_pos_text_.fontSize = 16;
+
+        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+
+        border_.rect.size       = size;
+        border_.fill            = { 0, 0, 0, 0 };
+        border_.borderColor     = { 118, 185, 0, 255 };
+        border_.borderThickness = 2.0f;
+
+        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
 
         model_.addLight( gfx::core::Vector3f( 3, 3, -3 ), 1.0, 0.3, 0.9 );
         model_.addLight( gfx::core::Vector3f( 0, 0, -11 ), 0.2, 0.3, 0.9 );
+
+        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
 
         // model_.addTorus( model::Material( gfx::core::Color( 118, 185, 0 ) ), { 0, 0, -5 }, 1, 2
         // );
@@ -118,10 +143,12 @@ class Scene : public gfx::ui::Widget {
         // ),
         //  gfx::core::Vector3f( -5, -5, -5 ),
         //  gfx::core::Vector3f( 1, 1, 1 ) );
+
+        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
     }
 
     void
-    setFont( const gfx::core::Font& font )
+    setFont( const dr4::Font* font )
     {
         info_panel_.setFont( font );
     }
@@ -133,7 +160,7 @@ class Scene : public gfx::ui::Widget {
     }
 
     virtual bool
-    onIdle( const gfx::ui::Event& event ) override final
+    onIdle( const hui::Event& event ) override final
     {
         update();
         model_.needUpdate() = false;
@@ -142,15 +169,15 @@ class Scene : public gfx::ui::Widget {
     }
 
     virtual bool
-    onMousePress( const gfx::ui::Event& event ) override final
+    onMousePress( const hui::Event& event ) override final
     {
         if ( !isHovered() )
         {
             return false;
         }
 
-        auto px = event.info.mouse_button.x - getAbsPos().x;
-        auto py = event.info.mouse_button.y - getAbsPos().y;
+        auto px = event.info.mouseButton.pos.x - getAbsPos().x;
+        auto py = event.info.mouseButton.pos.y - getAbsPos().y;
 
         model::Primitive* obj = model_.getIntersectedObj( px, py );
 
@@ -163,7 +190,7 @@ class Scene : public gfx::ui::Widget {
 
         if ( obj != nullptr )
         {
-            info_panel_.setPosition( px, py );
+            info_panel_.setRelPos( px, py );
             info_panel_.update( obj );
             info_panel_.setVisible( true );
         } else
@@ -201,11 +228,13 @@ class Scene : public gfx::ui::Widget {
                 {
                     for ( size_t col = 0; col < w; ++col )
                     {
-                        gfx::core::Vector2f pos( static_cast<float>( col ),
-                                                 static_cast<float>( row ) );
-                        gfx::core::Color    color =
-                            model_.calcPixelColor( row, col, background_color_ );
-                        pixels_[row * w + col] = gfx::core::Vertex( pos, color );
+                        gfx::core::Color color = model_.calcPixelColor( row,
+                                                                        col,
+                                                                        { background_color_.r,
+                                                                          background_color_.g,
+                                                                          background_color_.b,
+                                                                          background_color_.a } );
+                        pixels_->SetPixel( col, row, { color.r, color.g, color.b, color.a } );
                     }
                 }
             } );
@@ -228,20 +257,27 @@ class Scene : public gfx::ui::Widget {
         oss << "( " << std::fixed << std::setprecision( 1 ) << cam_pos.x << ", " << cam_pos.y
             << ", " << cam_pos.z << " )";
 
-        camera_pos_text_.setString( oss.str() );
+        camera_pos_text_.text = oss.str();
     }
 
+  public:
     void
-    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+    RedrawMyTexture() const override final
     {
-        gfx::core::Transform widget_transform = transform.combine( getTransform() );
+        // gfx::core::Transform widget_transform = transform.combine( getTransform() );
 
-        window.draw( border_, widget_transform );
+        // dr4::Rectangle cp = border_;
+        // cp.rect.pos       = { 1, 1 };
 
-        window.draw( pixels_.data(),
-                     pixels_.size(),
-                     gfx::core::PrimitiveType::Points,
-                     widget_transform );
+        texture_->Draw( border_ );
+        texture_->Draw( *pixels_, { 0, 0 } );
+
+        // window.draw( border_, widget_transform );
+
+        // window.draw( pixels_.data(),
+        //  pixels_.size(),
+        //  gfx::core::PrimitiveType::Points,
+        //  widget_transform );
 
         if ( model_.getTargetObj() != nullptr )
         {
@@ -268,30 +304,42 @@ class Scene : public gfx::ui::Widget {
                 }
             }
 
-            std::vector<gfx::core::Vertex> outline = {
-                { { min_x, min_y }, gfx::core::Color::Red },
-                { { max_x, min_y }, gfx::core::Color::Red },
-                { { max_x, max_y }, gfx::core::Color::Red },
-                { { min_x, max_y }, gfx::core::Color::Red },
-                { { min_x, min_y }, gfx::core::Color::Red } };
+            // std::vector<gfx::core::Vertex> outline = {
+            // { { min_x, min_y }, gfx::core::Color::Red },
+            // { { max_x, min_y }, gfx::core::Color::Red },
+            // { { max_x, max_y }, gfx::core::Color::Red },
+            // { { min_x, max_y }, gfx::core::Color::Red },
+            // { { min_x, min_y }, gfx::core::Color::Red } };
 
-            window.draw( outline.data(),
-                         outline.size(),
-                         gfx::core::PrimitiveType::LineStrip,
-                         widget_transform );
+            dr4::Rectangle rect;
+            rect.rect.pos        = { min_x, min_y };
+            rect.rect.size       = { max_x - min_x, max_y - min_y };
+            rect.fill            = { 0, 0, 0, 0 };
+            rect.borderColor     = { 255, 0, 0, 255 };
+            rect.borderThickness = 2.0f;
+
+            texture_->Draw( rect );
+            //
+            // window.draw( outline.data(),
+            //  outline.size(),
+            //  gfx::core::PrimitiveType::LineStrip,
+            //  widget_transform );
         }
 
-        window.draw( info_panel_, widget_transform );
-        window.draw( camera_pos_text_, widget_transform );
+        info_panel_.Redraw();
+
+        texture_->Draw( camera_pos_text_ );
+
+        // parent_->getTexture()->Draw( *texture_, pos_ );
     }
 
   private:
-    gfx::core::Text                camera_pos_text_;
-    gfx::core::RectangleShape      border_;
-    model::SceneManager            model_;
-    gfx::core::Color               background_color_;
-    view::ObjInfoPanel             info_panel_;
-    std::vector<gfx::core::Vertex> pixels_;
+    dr4::Text           camera_pos_text_;
+    dr4::Rectangle      border_;
+    model::SceneManager model_;
+    dr4::Color          background_color_;
+    view::ObjInfoPanel  info_panel_;
+    dr4::Image*         pixels_;
 };
 
 } // namespace view

@@ -2,17 +2,27 @@
 #include "container_widget.hpp"
 #include "dr4/math/vec2.hpp"
 #include "dr4/mousecodes.hpp"
+#include "plugin_manager.hpp"
+#include <cassert>
 
 namespace hui {
 
-Widget::Widget( float x, float y, float w, float h ) : size_( w, h )
+Widget::Widget( cum::PluginManager* pm, float x, float y, float w, float h ) : size_( w, h )
 {
+    pm_ = pm;
+
+    window_ = pm->getWindow();
+
+    texture_ = window_->CreateTexture();
+
+    texture_->SetSize( { w, h } );
+
     setRelPos( x, y );
     setSize( size_ );
 }
 
-Widget::Widget( const dr4::Vec2f& pos, const dr4::Vec2f& size )
-    : Widget( pos.x, pos.y, size.x, size.y )
+Widget::Widget( cum::PluginManager* pm, const dr4::Vec2f& pos, const dr4::Vec2f& size )
+    : Widget( pm, pos.x, pos.y, size.x, size.y )
 {
 }
 
@@ -188,9 +198,36 @@ Widget::setParent( Widget* new_parent )
 }
 
 void
-Widget::draw( dr4::Window& window ) const
+Widget::RedrawMyTexture() const
 {
-    window.Draw( *texture_, pos_ );
+}
+
+void
+Widget::DrawOnParentTexture() const
+{
+    assert( parent_ );
+
+    parent_->getTexture()->Draw( *texture_, pos_ );
+}
+
+void
+Widget::Redraw() const
+{
+    texture_->Clear( { 0, 0, 0, 0 } );
+    RedrawMyTexture();
+    DrawOnParentTexture();
+}
+
+dr4::Texture*
+Widget::getTexture()
+{
+    return texture_;
+}
+
+const dr4::Texture*
+Widget::getTexture() const
+{
+    return texture_;
 }
 
 } // namespace hui

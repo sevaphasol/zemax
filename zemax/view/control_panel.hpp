@@ -1,5 +1,8 @@
 #pragma once
 
+#include "custom-hui-impl/button.hpp"
+#include "custom-hui-impl/container_widget.hpp"
+#include "custom-hui-impl/text_field.hpp"
 #include "gfx/core/color.hpp"
 #include "gfx/core/event.hpp"
 #include "gfx/core/font.hpp"
@@ -26,24 +29,28 @@
 namespace zemax {
 namespace view {
 
-class ControlPanel : public gfx::ui::ContainerWidget {
+class ControlPanel : public hui::ContainerWidget {
   public:
-    explicit ControlPanel( const gfx::core::Font& font, zemax::model::SceneManager& scene_manager )
-        : scene_manager_( scene_manager ),
+    explicit ControlPanel( cum::PluginManager*         pm,
+                           const dr4::Font*            font,
+                           zemax::model::SceneManager& scene_manager )
+        : hui::ContainerWidget( pm, Config::ControlPanel::Position, Config::ControlPanel::Size ),
+          scene_manager_( scene_manager ),
           font_( font ),
           camera_( scene_manager.getCamera() ),
-          scrollbar_( Config::ControlPanel::ScrollBar::Position,
+          scrollbar_( pm,
+                      Config::ControlPanel::ScrollBar::Position,
                       Config::ControlPanel::ScrollBar::Size )
     {
         setDraggable( true );
 
-        setPosition( Config::ControlPanel::Position );
-        setSize( Config::ControlPanel::Size );
+        // setRelPos( Config::ControlPanel::Position );
+        // setSize( Config::ControlPanel::Size );
 
-        border_.setSize( getSize() );
-        border_.setFillColor( Config::ControlPanel::BackgroundColor );
-        border_.setOutlineColor( Config::ControlPanel::BorderColor );
-        border_.setOutlineThickness( Config::ControlPanel::BorderThickness );
+        border_.rect.size       = getSize();
+        border_.fill            = Config::ControlPanel::BackgroundColor;
+        border_.borderColor     = Config::ControlPanel::BorderColor;
+        border_.borderThickness = Config::ControlPanel::BorderThickness;
 
         setupButton( ButtonCode::MoveLeft,
                      Config::ControlPanel::Button::MvL::Position,
@@ -136,14 +143,14 @@ class ControlPanel : public gfx::ui::ContainerWidget {
                         Config::ControlPanel::TextField::RefFactor::Position,
                         Config::ControlPanel::TextField::RefFactor::Title );
 
-        scrollbar_.parent_ = this;
+        scrollbar_.setParent( this );
         setupScrollBarButton( ScrollBarButtonCode::Sphere, "Sphere" );
         setupScrollBarButton( ScrollBarButtonCode::Plane, "Plane" );
         setupScrollBarButton( ScrollBarButtonCode::AABB, "AABB" );
     }
 
     void
-    setFont( const gfx::core::Font& font )
+    setFont( const dr4::Font* font )
     {
         font_ = font;
     }
@@ -160,7 +167,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     }
 
     bool
-    propagateEventToChildren( const gfx::ui::Event& event ) override
+    propagateEventToChildren( const hui::Event& event ) override
     {
         for ( const auto& button : buttons_ )
         {
@@ -182,7 +189,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     }
 
     virtual bool
-    onIdle( const gfx::ui::Event& event ) override final
+    onIdle( const hui::Event& event ) override final
     {
         if ( isPressed( MoveLeft ) )
         {
@@ -379,7 +386,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     }
 
   private:
-    gfx::core::Font font_;
+    const dr4::Font* font_;
 
     enum ButtonCode {
         MoveLeft,
@@ -406,7 +413,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
         ButtonCount,
     };
 
-    std::unique_ptr<gfx::ui::Button> buttons_[ButtonCount];
+    std::unique_ptr<hui::Button> buttons_[ButtonCount];
 
     enum TextFieldCode {
         NewObjX,
@@ -420,7 +427,7 @@ class ControlPanel : public gfx::ui::ContainerWidget {
         TextFieldCount,
     };
 
-    std::unique_ptr<gfx::ui::TextField> text_fields_[TextFieldCount];
+    std::unique_ptr<hui::TextField> text_fields_[TextFieldCount];
 
     enum ScrollBarButtonCode {
         Sphere,
@@ -434,82 +441,83 @@ class ControlPanel : public gfx::ui::ContainerWidget {
     bool
     isPressedJustNow( ButtonCode code )
     {
-        return dynamic_cast<gfx::ui::Button*>( buttons_[code].get() )->isPressedJustNow();
+        return dynamic_cast<hui::Button*>( buttons_[code].get() )->isPressedJustNow();
     }
 
     bool
     isPressed( ButtonCode code )
     {
-        return dynamic_cast<gfx::ui::Button*>( buttons_[code].get() )->isPressed();
+        return dynamic_cast<hui::Button*>( buttons_[code].get() )->isPressed();
     }
 
     void
-    setupButton( ButtonCode code, const gfx::core::Vector2f& pos, const char* title )
+    setupButton( ButtonCode code, const dr4::Vec2f& pos, const char* title )
     {
-        buttons_[code] = std::move(
-            std::make_unique<gfx::ui::Button>( pos,
-                                               Config::ControlPanel::Button::Size,
-                                               Config::ControlPanel::Button::DefaultColor,
-                                               Config::ControlPanel::Button::HoveredColor,
-                                               Config::ControlPanel::Button::PressedColor,
-                                               font_,
-                                               title,
-                                               Config::ControlPanel::Button::FontColor,
-                                               Config::ControlPanel::Button::FontSize ) );
-        buttons_[code]->parent_ = this;
+        buttons_[code] =
+            std::move( std::make_unique<hui::Button>( pm_,
+                                                      pos,
+                                                      Config::ControlPanel::Button::Size,
+                                                      Config::ControlPanel::Button::DefaultColor,
+                                                      Config::ControlPanel::Button::HoveredColor,
+                                                      Config::ControlPanel::Button::PressedColor,
+                                                      font_,
+                                                      title,
+                                                      Config::ControlPanel::Button::FontColor,
+                                                      Config::ControlPanel::Button::FontSize ) );
+        buttons_[code]->setParent( this );
     }
 
     void
-    setupTextField( TextFieldCode code, const gfx::core::Vector2f& pos, const std::string& title )
+    setupTextField( TextFieldCode code, const dr4::Vec2f& pos, const std::string& title )
     {
-        text_fields_[code] = std::move(
-            std::make_unique<gfx::ui::TextField>( title,
-                                                  font_,
-                                                  pos,
-                                                  Config::ControlPanel::TextField::Size ) );
-        text_fields_[code]->parent_ = this;
+        text_fields_[code] =
+            std::move( std::make_unique<hui::TextField>( pm_,
+                                                         title,
+                                                         font_,
+                                                         pos,
+                                                         Config::ControlPanel::TextField::Size ) );
+        text_fields_[code]->setParent( this );
     }
 
     void
     setupScrollBarButton( ScrollBarButtonCode code, const char* label )
     {
         scrollbar_.addButton(
-            std::make_unique<gfx::ui::Button>( Config::ControlPanel::ScrollBar::Button::Position,
-                                               Config::ControlPanel::ScrollBar::Button::Size,
-                                               Config::ControlPanel::Button::DefaultColor,
-                                               Config::ControlPanel::Button::HoveredColor,
-                                               Config::ControlPanel::Button::PressedColor,
-                                               font_,
-                                               label,
-                                               Config::ControlPanel::Button::FontColor,
-                                               Config::ControlPanel::Button::FontSize ) );
+            std::make_unique<hui::Button>( pm_,
+                                           Config::ControlPanel::ScrollBar::Button::Position,
+                                           Config::ControlPanel::ScrollBar::Button::Size,
+                                           Config::ControlPanel::Button::DefaultColor,
+                                           Config::ControlPanel::Button::HoveredColor,
+                                           Config::ControlPanel::Button::PressedColor,
+                                           font_,
+                                           label,
+                                           Config::ControlPanel::Button::FontColor,
+                                           Config::ControlPanel::Button::FontSize ) );
     }
 
     virtual void
-    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+    RedrawMyTexture() const override final
     {
-        gfx::core::Transform widget_transform = transform.combine( getTransform() );
-
-        window.draw( border_, widget_transform );
+        texture_->Draw( border_ );
 
         for ( const auto& button : buttons_ )
         {
-            window.draw( *button, widget_transform );
+            button->Redraw();
         }
 
         for ( const auto& text_field : text_fields_ )
         {
-            window.draw( *text_field, widget_transform );
+            text_field->Redraw();
         }
 
-        window.draw( scrollbar_, widget_transform );
+        scrollbar_.Redraw();
     }
 
   private:
     zemax::model::SceneManager& scene_manager_;
     zemax::model::Camera&       camera_;
 
-    gfx::core::RectangleShape border_;
+    dr4::Rectangle border_;
 };
 
 } // namespace view

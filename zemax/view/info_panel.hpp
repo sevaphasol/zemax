@@ -1,36 +1,33 @@
 #pragma once
 
-#include "gfx/core/color.hpp"
-#include "gfx/core/font.hpp"
-#include "gfx/core/rectangle_shape.hpp"
-#include "gfx/core/text.hpp"
-#include "gfx/core/vector2.hpp"
-#include "gfx/core/window.hpp"
-#include "gfx/ui/widget.hpp"
+#include "custom-hui-impl/widget.hpp"
+#include "dr4/texture.hpp"
 #include "zemax/config.hpp"
 #include "zemax/model/primitives/primitive.hpp"
 
+#include <cassert>
 #include <iomanip>
 
 namespace zemax {
 namespace view {
 
-class ObjInfoPanel : public gfx::ui::Widget {
+class ObjInfoPanel : public hui::Widget {
   public:
-    ObjInfoPanel( const gfx::core::Font& font, float w, float h )
-        : gfx::ui::Widget( 0.0f, 0.0f, w, h ), rect_( { w, h } )
+    ObjInfoPanel( cum::PluginManager* pm, const dr4::Font* font, float w, float h )
+        : hui::Widget( pm, 0.0f, 0.0f, w, h )
     {
-        text_.setFillColor( Config::Scene::ObjInfoPanel::FontColor );
-        text_.setCharacterSize( Config::Scene::ObjInfoPanel::FontSize );
-        text_.setFont( font );
+        text_.font     = font;
+        text_.color    = Config::Scene::ObjInfoPanel::FontColor;
+        text_.fontSize = Config::Scene::ObjInfoPanel::FontSize;
 
-        rect_.setFillColor( Config::Scene::ObjInfoPanel::FillColor );
-        rect_.setOutlineColor( Config::Scene::ObjInfoPanel::OutlineColor );
-        rect_.setOutlineThickness( Config::Scene::ObjInfoPanel::OutlineThickness );
+        rect_.rect.size       = { w, h };
+        rect_.fill            = Config::Scene::ObjInfoPanel::FillColor;
+        rect_.borderColor     = Config::Scene::ObjInfoPanel::OutlineColor;
+        rect_.borderThickness = Config::Scene::ObjInfoPanel::OutlineThickness;
     }
 
-    ObjInfoPanel( const gfx::core::Font& font, const gfx::core::Vector2f& size )
-        : ObjInfoPanel( font, size.x, size.y )
+    ObjInfoPanel( cum::PluginManager* pm, const dr4::Font* font, const dr4::Vec2f& size )
+        : ObjInfoPanel( pm, font, size.x, size.y )
     {
     }
 
@@ -42,14 +39,16 @@ class ObjInfoPanel : public gfx::ui::Widget {
         setColor( obj );
         setReflection( obj );
 
-        text_.setString( type_ + '\n' + coords_ + '\n' + color_ + '\n' + reflection_ );
+        text_.text = type_ + '\n' + coords_ + '\n' + color_ + '\n' + reflection_;
+
+        // text_.setString( type_ + '\n' + coords_ + '\n' + color_ + '\n' + reflection_ );
         // text_.setString( type_ );
     }
 
     void
-    setFont( const gfx::core::Font& font )
+    setFont( const dr4::Font* font )
     {
-        text_.setFont( font );
+        text_.font = font;
     }
 
     bool
@@ -115,14 +114,12 @@ class ObjInfoPanel : public gfx::ui::Widget {
     }
 
     void
-    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override
+    RedrawMyTexture() const
     {
-        transform = transform.combine( getTransform() );
-
         if ( isVisible() )
         {
-            window.draw( rect_, transform );
-            window.draw( text_, transform );
+            texture_->Draw( rect_ );
+            texture_->Draw( text_ );
         }
     }
 
@@ -137,8 +134,8 @@ class ObjInfoPanel : public gfx::ui::Widget {
     std::string color_;
     std::string reflection_;
 
-    gfx::core::RectangleShape rect_;
-    gfx::core::Text           text_;
+    dr4::Rectangle rect_;
+    dr4::Text      text_;
 
     bool is_visible_ = false;
 };

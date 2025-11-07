@@ -4,6 +4,7 @@
 #include "dr4/texture.hpp"
 #include "dr4/window.hpp"
 #include "event.hpp"
+#include "plugin_manager.hpp"
 
 // #include "gfx/core/drawable.hpp"
 // #include "gfx/core/transformable.hpp"
@@ -16,20 +17,24 @@ namespace hui {
 
 class Widget {
   public:
-    explicit Widget( float x, float y, float w, float h );
-    explicit Widget( const dr4::Vec2f& pos  = { 0.0f, 0.0f },
-                     const dr4::Vec2f& size = { 0.0f, 0.0f } );
+    explicit Widget( cum::PluginManager* pm, float x, float y, float w, float h );
+    explicit Widget( cum::PluginManager* pm, const dr4::Vec2f& pos, const dr4::Vec2f& size );
     virtual ~Widget() = default;
 
-    // clang-format off
-    virtual bool onIdle   		( const hui::Event& event );
-    virtual bool onTextEnter    ( const hui::Event& event );
-    virtual bool onKeyPress     ( const hui::Event& event );
-    virtual bool onKeyRelease   ( const hui::Event& event );
-    virtual bool onMousePress   ( const hui::Event& event );
-    virtual bool onMouseRelease ( const hui::Event& event );
-    virtual bool onMouseMove    ( const hui::Event& event );
-    // clang-format on
+    virtual bool
+    onIdle( const hui::Event& event );
+    virtual bool
+    onTextEnter( const hui::Event& event );
+    virtual bool
+    onKeyPress( const hui::Event& event );
+    virtual bool
+    onKeyRelease( const hui::Event& event );
+    virtual bool
+    onMousePress( const hui::Event& event );
+    virtual bool
+    onMouseRelease( const hui::Event& event );
+    virtual bool
+    onMouseMove( const hui::Event& event );
 
     bool
     isHovered() const;
@@ -61,10 +66,25 @@ class Widget {
     bool
     pointInside( const dr4::Vec2f& point ) const;
 
+    dr4::Texture*
+    getTexture();
+
+    const dr4::Texture*
+    getTexture() const;
+
+  public:
+    virtual void
+    RedrawMyTexture() const;
+
     void
-    draw( dr4::Window& window ) const;
+    DrawOnParentTexture() const;
+
+    void
+    Redraw() const;
 
   protected:
+    cum::PluginManager* pm_;
+
     dr4::Window* window_;
 
     dr4::Texture* texture_;

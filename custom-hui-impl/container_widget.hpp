@@ -7,12 +7,16 @@
 
 namespace hui {
 
-class ContainerWidget : public Widget {
+class ContainerWidget : public hui::Widget {
   public:
-    explicit ContainerWidget( float x, float y, float w, float h ) : Widget( x, y, w, h ) {}
-    explicit ContainerWidget( const dr4::Vec2f& pos  = { 0.0f, 0.0f },
-                              const dr4::Vec2f& size = { 0.0f, 0.0f } )
-        : Widget( pos, size ) {};
+    explicit ContainerWidget( cum::PluginManager* pm, float x, float y, float w, float h )
+        : Widget( pm, x, y, w, h )
+    {
+    }
+    explicit ContainerWidget( cum::PluginManager* pm,
+                              const dr4::Vec2f&   pos  = { 0.0f, 0.0f },
+                              const dr4::Vec2f&   size = { 0.0f, 0.0f } )
+        : Widget( pm, pos, size ) {};
     virtual ~ContainerWidget() = default;
 
     virtual void
@@ -103,13 +107,14 @@ class ContainerWidget : public Widget {
 
 class VectorContainerWidget : public ContainerWidget {
   public:
-    explicit VectorContainerWidget( float x, float y, float w, float h )
-        : ContainerWidget( x, y, w, h )
+    explicit VectorContainerWidget( cum::PluginManager* pm, float x, float y, float w, float h )
+        : ContainerWidget( pm, x, y, w, h )
     {
     }
-    explicit VectorContainerWidget( const dr4::Vec2f& pos  = { 0.0f, 0.0f },
-                                    const dr4::Vec2f& size = { 0.0f, 0.0f } )
-        : ContainerWidget( pos, size ) {};
+    explicit VectorContainerWidget( cum::PluginManager* pm,
+                                    const dr4::Vec2f&   pos  = { 0.0f, 0.0f },
+                                    const dr4::Vec2f&   size = { 0.0f, 0.0f } )
+        : ContainerWidget( pm, pos, size ) {};
     virtual ~VectorContainerWidget() = default;
 
     virtual bool
@@ -151,7 +156,7 @@ class VectorContainerWidget : public ContainerWidget {
     void
     addChild( std::unique_ptr<Widget> child )
     {
-        setParent( this );
+        child->setParent( this );
         children_.emplace_back( std::move( child ) );
     }
 
@@ -185,18 +190,18 @@ class VectorContainerWidget : public ContainerWidget {
     }
 
     void
-    drawChildren( dr4::Window& window ) const
+    RedrawChildren() const
     {
         for ( const auto& child : children_ )
         {
-            child->draw( window );
+            child->Redraw();
         }
     }
 
     void
-    draw( dr4::Window& window ) const
+    Redraw() const
     {
-        drawChildren( window );
+        RedrawChildren();
     }
 
   protected:

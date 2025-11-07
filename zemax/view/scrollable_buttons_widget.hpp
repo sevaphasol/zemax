@@ -1,46 +1,40 @@
 #pragma once
 
-#include "gfx/core/color.hpp"
-#include "gfx/core/event.hpp"
-#include "gfx/core/rectangle_shape.hpp"
-#include "gfx/core/transformable.hpp"
-#include "gfx/core/vector2.hpp"
-#include "gfx/core/window.hpp"
-#include "gfx/ui/button.hpp"
-#include "gfx/ui/container_widget.hpp"
-#include "gfx/ui/scrollbar.hpp"
-#include "zemax/model/rendering/scene_manager.hpp"
+#include "custom-hui-impl/button.hpp"
+#include "custom-hui-impl/container_widget.hpp"
+#include "custom-hui-impl/scrollbar.hpp"
 #include <memory>
 
 namespace zemax {
 namespace view {
 
-class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
+class ScrollableButtonsWidget : public hui::ContainerWidget {
   public:
-    explicit ScrollableButtonsWidget( const gfx::core::Vector2f& pos  = { 0.0f, 0.0f },
-                                      const gfx::core::Vector2f& size = { 0.0f, 0.0f } )
-        : ContainerWidget( pos, size ), scroll_bar_( 0, 0 )
+    explicit ScrollableButtonsWidget( cum::PluginManager* pm,
+                                      const dr4::Vec2f&   pos  = { 0.0f, 0.0f },
+                                      const dr4::Vec2f&   size = { 0.0f, 0.0f } )
+        : ContainerWidget( pm, pos, size ), scroll_bar_( pm, 0, 0 )
     {
         // setPosition( Config::ControlPanel::Size );
         // setSize( Config::ControlPanel::Size );
 
-        border_.setSize( size );
-        border_.setFillColor( gfx::core::Color::Transparent );
-        border_.setOutlineColor( gfx::core::Color( 118, 185, 0 ) );
-        border_.setOutlineThickness( 2.f );
+        border_.rect.size       = size;
+        border_.fill            = { 0, 0, 0, 0 };
+        border_.borderColor     = { 118, 185, 0, 255 };
+        border_.borderThickness = 2.f;
 
-        scroll_bar_.parent_ = this;
+        scroll_bar_.setParent( this );
     };
 
-    explicit ScrollableButtonsWidget( float x, float y, float w, float h )
-        : ScrollableButtonsWidget( gfx::core::Vector2f( x, y ), gfx::core::Vector2f( w, h ) )
+    explicit ScrollableButtonsWidget( cum::PluginManager* pm, float x, float y, float w, float h )
+        : ScrollableButtonsWidget( pm, dr4::Vec2f( x, y ), dr4::Vec2f( w, h ) )
     {
     }
 
     virtual ~ScrollableButtonsWidget() = default;
 
     bool
-    propagateEventToChildren( const gfx::ui::Event& event ) override
+    propagateEventToChildren( const hui::Event& event ) override
     {
         if ( event.apply( &scroll_bar_ ) )
         {
@@ -59,7 +53,7 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
     }
 
     bool
-    onIdle( const gfx::ui::Event& event ) override
+    onIdle( const hui::Event& event ) override
     {
         if ( scroll_bar_.isScrolled() )
         {
@@ -116,38 +110,44 @@ class ScrollableButtonsWidget : public gfx::ui::ContainerWidget {
     // }
 
     void
-    addButton( std::unique_ptr<gfx::ui::Button> button )
+    addButton( std::unique_ptr<hui::Button> button )
     {
-        button->parent_ = this;
+        button->setParent( this );
         buttons_.push_back( std::move( button ) );
     }
 
   private:
     virtual void
-    draw( gfx::core::Window& window, gfx::core::Transform transform ) const override final
+    RedrawMyTexture() const override final
     {
-        gfx::core::Transform widget_transform = transform.combine( getTransform() );
+        // dr4::Transform widget_transform = transform.combine( getTransform() );
 
-        window.draw( scroll_bar_, widget_transform );
+        scroll_bar_.Redraw();
+
+        // window.draw( scroll_bar_, widget_transform );
         if ( !buttons_.empty() )
         {
-            window.draw( *buttons_[cur_active_button_], widget_transform );
+            buttons_[cur_active_button_]->Redraw();
         }
 
-        window.draw( border_, widget_transform );
+        // texture_->Draw(bringToFront(border_))
+
+        texture_->Draw( border_ );
+
+        // window.draw( border_, widget_transform );
     }
 
   private:
-    gfx::ui::ScrollBar scroll_bar_;
+    hui::ScrollBar scroll_bar_;
 
-    gfx::core::RectangleShape border_;
+    dr4::Rectangle border_;
 
     int cur_active_button_  = 0;
     int prev_active_button_ = -1;
 
     bool is_scroled_ = false;
 
-    std::vector<std::unique_ptr<gfx::ui::Button>> buttons_;
+    std::vector<std::unique_ptr<hui::Button>> buttons_;
 };
 
 } // namespace view

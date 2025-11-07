@@ -1,13 +1,17 @@
 #include "window_manager.hpp"
 #include "dr4/event.hpp"
 #include "event.hpp"
+#include "plugin_manager.hpp"
 #include <iostream>
 
 namespace hui {
 
-WindowManager::WindowManager( dr4::Window* window, const dr4::Color& color )
-    : window_( window ), background_color_( color )
+WindowManager::WindowManager( cum::PluginManager* pm, const dr4::Color& color )
+    : window_( pm->getWindow() ),
+      background_color_( color ),
+      desktop_( pm, { 0, 0 }, pm->getWindow()->GetSize() )
 {
+    std::cerr << window_->GetSize().x << " " << window_->GetSize().y << std::endl;
 }
 
 void
@@ -51,9 +55,9 @@ WindowManager::handleEvents()
             case dr4::Event::Type::QUIT:
                 window_->Close();
                 break;
-            // case dr4::Event::TextEntered:
-            // ui::TextEnteredEvent( core_event ).apply( &desktop_ );
-            // break;
+            case dr4::Event::Type::TEXT_EVENT:
+                hui::TextEnteredEvent( dr4_event.value() ).apply( &desktop_ );
+                break;
             case dr4::Event::Type::KEY_DOWN:
                 hui::KeyPressEvent( dr4_event.value() ).apply( &desktop_ );
                 break;
@@ -81,7 +85,10 @@ void
 WindowManager::draw()
 {
     window_->Clear( background_color_ );
-    desktop_.draw( *window_ );
+    // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+    desktop_.Redraw();
+    window_->Draw( *desktop_.getTexture(), { 0, 0 } );
+    // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
     window_->Display();
 }
 

@@ -10,7 +10,7 @@ namespace hui {
 
 class WindowManager {
   public:
-    WindowManager( dr4::Window* window, const dr4::Color& color );
+    WindowManager( cum::PluginManager* pm, const dr4::Color& color );
     ~WindowManager() = default;
 
     void

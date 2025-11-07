@@ -18,16 +18,26 @@ main()
 
     auto* dr4_backend = pm.getDrawLibBackend();
 
+    // pm.loadGetBounds();
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
     auto* window = dr4_backend->CreateWindow();
-
-    window->SetSize( dr4::Vec2f( 1000.0f, 1000.0f ) );
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+    window->SetSize( { zemax::Config::Window::Width, zemax::Config::Window::Height } );
+    std::cerr << window->GetSize().x << " " << window->GetSize().y << std::endl;
     window->SetTitle( "Test" );
-
-    hui::WindowManager wm( window, dr4::Color( 128, 128, 128, 255 ) );
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+    pm.setWindow( window );
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+    hui::WindowManager wm( &pm, dr4::Color( 128, 128, 128, 255 ) );
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+    auto* font = window->CreateFont();
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+    font->loadFromFile( "assets/JetBrainsMono-Regular.ttf" );
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+    wm.addWidget( std::make_unique<zemax::view::Zemax>( &pm, font ) );
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
 
     wm.run();
-
-    wm.addWidget( std::make_unique<zemax::view::Zemax>() );
 
     // gfx::ui::WindowManager wm( zemax::Config::Window::Width,
     //    zemax::Config::Window::Height,
