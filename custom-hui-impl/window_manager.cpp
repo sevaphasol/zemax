@@ -11,7 +11,6 @@ WindowManager::WindowManager( cum::PluginManager* pm, const dr4::Color& color )
       background_color_( color ),
       desktop_( pm, { 0, 0 }, pm->getWindow()->GetSize() )
 {
-    std::cerr << window_->GetSize().x << " " << window_->GetSize().y << std::endl;
 }
 
 void

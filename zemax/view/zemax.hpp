@@ -25,7 +25,7 @@ class Zemax : public hui::ContainerWidget {
                   Config::Camera::Position ),
           panel_( pm, font, scene_.getModel() )
     {
-        fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+        // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
         scene_.setParent( this );
         panel_.setParent( this );
     }

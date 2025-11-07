@@ -66,6 +66,7 @@ class Scene : public hui::Widget {
         camera_pos_text_.font     = font;
         camera_pos_text_.color    = { 255, 255, 255, 255 };
         camera_pos_text_.fontSize = 16;
+        camera_pos_text_.pos      = { 5.0f, 5.0f };
 
         // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
 
@@ -269,7 +270,6 @@ class Scene : public hui::Widget {
         // dr4::Rectangle cp = border_;
         // cp.rect.pos       = { 1, 1 };
 
-        texture_->Draw( border_ );
         texture_->Draw( *pixels_, { 0, 0 } );
 
         // window.draw( border_, widget_transform );
@@ -329,6 +329,8 @@ class Scene : public hui::Widget {
         info_panel_.Redraw();
 
         texture_->Draw( camera_pos_text_ );
+
+        texture_->Draw( border_ );
 
         // parent_->getTexture()->Draw( *texture_, pos_ );
     }

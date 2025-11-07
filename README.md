@@ -1,18 +1,14 @@
-Clone
+clone
 ```shell
 git clone https://github.com/sevaphasol/zemax.git --recurse-submodules
 ```
-or
-```shell
-git clone git@github.com:sevaphasol/zemax.git --recurse-submodules
-```
 
-Build
+build
 ```shell
 ./scripts/build.sh
 ```
 
-Run
+run
 ```shell
 ./scripts/run.sh
 ```

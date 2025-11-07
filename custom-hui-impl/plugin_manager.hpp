@@ -14,7 +14,7 @@ namespace cum {
 
 class PluginManager {
   public:
-    PluginManager() { std::cerr << "OK on " << __LINE__ << std::endl; }
+    PluginManager() {}
 
     dr4::DR4Backend*
     getDrawLibBackend()
