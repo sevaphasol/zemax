@@ -16,14 +16,17 @@ class ObjInfoPanel : public hui::Widget {
     ObjInfoPanel( cum::PluginManager* pm, const dr4::Font* font, float w, float h )
         : hui::Widget( pm, 0.0f, 0.0f, w, h )
     {
-        text_.font     = font;
-        text_.color    = Config::Scene::ObjInfoPanel::FontColor;
-        text_.fontSize = Config::Scene::ObjInfoPanel::FontSize;
+        text_.reset( pm->getWindow()->CreateText() );
+        rect_.reset( pm->getWindow()->CreateRectangle() );
 
-        rect_.rect.size       = { w, h };
-        rect_.fill            = Config::Scene::ObjInfoPanel::FillColor;
-        rect_.borderColor     = Config::Scene::ObjInfoPanel::OutlineColor;
-        rect_.borderThickness = Config::Scene::ObjInfoPanel::OutlineThickness;
+        text_->SetFont( font );
+        text_->SetColor( Config::Scene::ObjInfoPanel::FontColor );
+        text_->SetFontSize( Config::Scene::ObjInfoPanel::FontSize );
+
+        rect_->SetSize( { w, h } );
+        rect_->SetFillColor( Config::Scene::ObjInfoPanel::FillColor );
+        rect_->SetBorderColor( Config::Scene::ObjInfoPanel::OutlineColor );
+        rect_->SetBorderThickness( Config::Scene::ObjInfoPanel::OutlineThickness );
     }
 
     ObjInfoPanel( cum::PluginManager* pm, const dr4::Font* font, const dr4::Vec2f& size )
@@ -39,7 +42,7 @@ class ObjInfoPanel : public hui::Widget {
         setColor( obj );
         setReflection( obj );
 
-        text_.text = type_ + '\n' + coords_ + '\n' + color_ + '\n' + reflection_;
+        text_->SetText( type_ + '\n' + coords_ + '\n' + color_ + '\n' + reflection_ );
 
         // text_.setString( type_ + '\n' + coords_ + '\n' + color_ + '\n' + reflection_ );
         // text_.setString( type_ );
@@ -48,7 +51,7 @@ class ObjInfoPanel : public hui::Widget {
     void
     setFont( const dr4::Font* font )
     {
-        text_.font = font;
+        text_->SetFont( font );
     }
 
     bool
@@ -116,10 +119,12 @@ class ObjInfoPanel : public hui::Widget {
     void
     RedrawMyTexture() const
     {
+        texture_->Clear( { 0, 0, 0, 0 } );
+
         if ( isVisible() )
         {
-            texture_->Draw( rect_ );
-            texture_->Draw( text_ );
+            texture_->Draw( *rect_ );
+            texture_->Draw( *text_ );
         }
     }
 
@@ -134,8 +139,8 @@ class ObjInfoPanel : public hui::Widget {
     std::string color_;
     std::string reflection_;
 
-    dr4::Rectangle rect_;
-    dr4::Text      text_;
+    std::unique_ptr<dr4::Rectangle> rect_;
+    std::unique_ptr<dr4::Text>      text_;
 
     bool is_visible_ = false;
 };

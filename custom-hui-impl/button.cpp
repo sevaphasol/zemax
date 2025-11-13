@@ -23,49 +23,52 @@ Button::Button( cum::PluginManager* pm,
       hovered_color_( hovered_color ),
       pressed_color_( pressed_color )
 {
-    background_.rect.size = size;
+    background_.reset( pm->getWindow()->CreateRectangle() );
+    label_.reset( pm->getWindow()->CreateText() );
 
-    background_.fill = default_color;
-    label_.font      = font;
-    label_.text      = title;
-    label_.fontSize  = font_size;
-    label_.color     = font_color;
+    background_->SetSize( size );
 
-    moveInCenterOfRect( pm_, label_, size );
+    background_->SetFillColor( default_color );
+    label_->SetFont( font );
+    label_->SetText( title );
+    label_->SetFontSize( font_size );
+    label_->SetColor( font_color );
+
+    moveInCenterOfRect( *label_, size, pos );
 }
 
 void
 Button::setRelPos( const dr4::Vec2f& pos )
 {
     setRelPos( pos );
-    moveInCenterOfRect( pm_, label_, size_ );
+    moveInCenterOfRect( *label_, size_, pos );
 }
 
 void
 Button::setSize( const dr4::Vec2f& size )
 {
-    size_                 = size;
-    background_.rect.size = size;
-    moveInCenterOfRect( pm_, label_, size );
+    size_ = size;
+    background_->SetSize( size );
+    moveInCenterOfRect( *label_, size, pos_ );
 }
 
 void
 Button::setLabelText( const std::string& text )
 {
-    label_.text = text;
+    label_->SetText( text );
 }
 
 void
 Button::setLabelFont( const dr4::Font* font, size_t size )
 {
-    label_.font     = font;
-    label_.fontSize = size;
+    label_->SetFont( font );
+    label_->SetFontSize( size );
 }
 
 void
 Button::setBackgroundColor( const dr4::Color& color )
 {
-    background_.fill = color;
+    background_->SetFillColor( color );
 }
 
 bool
@@ -106,21 +109,21 @@ Button::updateVisuals()
 {
     if ( is_pressed_ )
     {
-        background_.fill = pressed_color_;
+        background_->SetFillColor( pressed_color_ );
     } else if ( is_hovered_ )
     {
-        background_.fill = hovered_color_;
+        background_->SetFillColor( hovered_color_ );
     } else
     {
-        background_.fill = default_color_;
+        background_->SetFillColor( default_color_ );
     }
 }
 
 void
 Button::RedrawMyTexture() const
 {
-    texture_->Draw( background_ );
-    texture_->Draw( label_ );
+    texture_->Draw( *background_ );
+    texture_->Draw( *label_ );
 }
 
 } // namespace hui

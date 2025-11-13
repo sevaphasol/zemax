@@ -2,6 +2,7 @@
 
 #include "container_widget.hpp"
 #include "widget.hpp"
+#include <memory>
 
 namespace hui {
 
@@ -33,7 +34,7 @@ class Thumb : public hui::Widget {
   private:
     ScrollBar* owner_;
 
-    dr4::Rectangle rect_;
+    std::unique_ptr<dr4::Rectangle> rect_;
 };
 
 class Arrow : public hui::Widget {
@@ -72,7 +73,7 @@ class Arrow : public hui::Widget {
 
     bool is_up_;
 
-    dr4::Rectangle rect_;
+    std::unique_ptr<dr4::Rectangle> rect_;
     // dr4::Vertex    triangle_[3];
 };
 
@@ -112,7 +113,7 @@ class ScrollBar : public hui::ContainerWidget {
     bool   is_scrolled_   = false;
     double scroll_factor_ = 0.0;
 
-    dr4::Rectangle border_;
+    std::unique_ptr<dr4::Rectangle> border_;
 
     Thumb thumb_;
     Arrow up_arrow_;

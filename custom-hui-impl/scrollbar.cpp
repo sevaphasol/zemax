@@ -1,7 +1,7 @@
 #include "scrollbar.hpp"
 #include "dr4/math/color.hpp"
 #include "dr4/math/vec2.hpp"
-#include "dr4/mousecodes.hpp"
+#include "dr4/mouse_buttons.hpp"
 #include "plugin_manager.hpp"
 
 #include <algorithm>
@@ -94,10 +94,12 @@ Thumb::Thumb( cum::PluginManager* pm,
 {
     parent_ = owner;
 
+    rect_.reset( pm->getWindow()->CreateRectangle() );
+
     setDraggable( true );
 
-    rect_.rect.size = size;
-    rect_.fill      = detail::ScrollBar::Thumb::Color::Default;
+    rect_->SetSize( size );
+    rect_->SetFillColor( detail::ScrollBar::Thumb::Color::Default );
 }
 
 bool
@@ -111,7 +113,7 @@ Thumb::onIdle( const Event& event )
 bool
 Thumb::onMousePress( const Event& event )
 {
-    if ( is_hovered_ && event.info.mouseButton.button == dr4::MOUSECODE_LEFT )
+    if ( is_hovered_ && event.info.mouseButton.button == dr4::MouseButtonType::LEFT )
     {
         is_pressed_  = true;
         is_dragging_ = true;
@@ -155,13 +157,13 @@ Thumb::updateVisuals()
 {
     if ( is_pressed_ )
     {
-        rect_.fill = detail::ScrollBar::Thumb::Color::Pressed;
+        rect_->SetFillColor( detail::ScrollBar::Thumb::Color::Pressed );
     } else if ( is_hovered_ )
     {
-        rect_.fill = detail::ScrollBar::Thumb::Color::Hover;
+        rect_->SetFillColor( detail::ScrollBar::Thumb::Color::Hover );
     } else
     {
-        rect_.fill = detail::ScrollBar::Thumb::Color::Default;
+        rect_->SetFillColor( detail::ScrollBar::Thumb::Color::Default );
     }
 }
 
@@ -170,7 +172,7 @@ Thumb::RedrawMyTexture() const
 {
     // core::Transform widget_transform = transform.combine( getTransform() );
 
-    texture_->Draw( rect_ );
+    texture_->Draw( *rect_ );
 
     // window.draw( rect_, widet_transform );
 }
@@ -184,8 +186,10 @@ Arrow::Arrow( cum::PluginManager* pm,
 {
     parent_ = owner;
 
-    rect_.rect.size = size;
-    rect_.fill      = detail::ScrollBar::ArrowField::Color::Default;
+    rect_.reset( pm->getWindow()->CreateRectangle() );
+
+    rect_->SetSize( size );
+    rect_->SetFillColor( detail::ScrollBar::ArrowField::Color::Default );
 
     setUpTriangle();
 }
@@ -208,7 +212,7 @@ Arrow::setUpTriangle()
 bool
 Arrow::onMousePress( const Event& event )
 {
-    if ( is_hovered_ && event.info.mouseButton.button == dr4::MOUSECODE_LEFT )
+    if ( is_hovered_ && event.info.mouseButton.button == dr4::MouseButtonType::LEFT )
     {
         is_pressed_ = true;
 
@@ -277,15 +281,15 @@ Arrow::updateVisuals()
 {
     if ( is_pressed_ )
     {
-        rect_.fill = detail::ScrollBar::ArrowField::Color::Pressed;
+        rect_->SetFillColor( detail::ScrollBar::ArrowField::Color::Pressed );
         updateTriangleColor( detail::ScrollBar::ArrowField::Triangle::Color::Pressed );
     } else if ( is_hovered_ )
     {
-        rect_.fill = detail::ScrollBar::ArrowField::Color::Hover;
+        rect_->SetFillColor( detail::ScrollBar::ArrowField::Color::Hover );
         updateTriangleColor( detail::ScrollBar::ArrowField::Triangle::Color::Hover );
     } else
     {
-        rect_.fill = detail::ScrollBar::ArrowField::Color::Default;
+        rect_->SetFillColor( detail::ScrollBar::ArrowField::Color::Default );
         updateTriangleColor( detail::ScrollBar::ArrowField::Triangle::Color::Default );
     }
 }
@@ -293,7 +297,7 @@ Arrow::updateVisuals()
 void
 Arrow::RedrawMyTexture() const
 {
-    texture_->Draw( rect_ );
+    texture_->Draw( *rect_ );
 }
 
 // void
@@ -332,10 +336,12 @@ ScrollBar::ScrollBar( cum::PluginManager* pm, const dr4::Vec2f& pos )
                       detail::ScrollBar::Size.y * detail::ScrollBar::ArrowField::SizeCoef ),
           false )
 {
-    border_.rect.size       = getSize();
-    border_.fill            = { 64, 64, 64, 128 };
-    border_.borderColor     = { 32, 32, 32, 255 };
-    border_.borderThickness = 4.0f;
+    border_.reset( pm->getWindow()->CreateRectangle() );
+
+    border_->SetSize( getSize() );
+    border_->SetFillColor( { 64, 64, 64, 128 } );
+    border_->SetBorderColor( { 32, 32, 32, 255 } );
+    border_->SetBorderThickness( 4.0f );
 }
 
 void
@@ -429,7 +435,7 @@ ScrollBar::RedrawMyTexture() const
 {
     // g::Transform widget_transform = transform.combine( getTransform() );
 
-    texture_->Draw( border_ );
+    texture_->Draw( *border_ );
 
     thumb_.Redraw();
     up_arrow_.Redraw();

@@ -1,7 +1,7 @@
 #include "widget.hpp"
 #include "container_widget.hpp"
 #include "dr4/math/vec2.hpp"
-#include "dr4/mousecodes.hpp"
+#include "dr4/mouse_buttons.hpp"
 #include "plugin_manager.hpp"
 #include <cassert>
 
@@ -71,7 +71,7 @@ Widget::onKeyRelease( const Event& event )
 bool
 Widget::onMousePress( const Event& event )
 {
-    if ( event.info.mouseButton.button == dr4::MOUSECODE_LEFT && is_hovered_ )
+    if ( event.info.mouseButton.button == dr4::MouseButtonType::LEFT && is_hovered_ )
     {
         is_pressed_ = true;
 
@@ -101,7 +101,7 @@ Widget::onMouseRelease( const Event& event )
 {
     is_pressed_ = false;
 
-    if ( is_dragging_ && event.info.mouseButton.button == dr4::MOUSECODE_LEFT )
+    if ( is_dragging_ && event.info.mouseButton.button == dr4::MouseButtonType::LEFT )
     {
         is_dragging_ = false;
         return true;
@@ -152,11 +152,14 @@ void
 Widget::setRelPos( const dr4::Vec2f& pos )
 {
     pos_ = pos;
+    texture_->SetPos( pos );
 }
 
 void
 Widget::setRelPos( float x, float y )
 {
+    texture_->SetPos( dr4::Vec2f{ x, y } );
+
     setRelPos( dr4::Vec2f{ x, y } );
 }
 
@@ -207,13 +210,13 @@ Widget::DrawOnParentTexture() const
 {
     assert( parent_ );
 
-    parent_->getTexture()->Draw( *texture_, pos_ );
+    parent_->getTexture()->Draw( *texture_ );
 }
 
 void
 Widget::Redraw() const
 {
-    texture_->Clear( { 0, 0, 0, 0 } );
+    texture_->Clear( { 0, 0, 0 } );
     RedrawMyTexture();
     DrawOnParentTexture();
 }

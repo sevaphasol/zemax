@@ -23,6 +23,7 @@
 
 #include <cstddef>
 #include <iomanip>
+#include <memory>
 #include <sstream>
 #include <thread>
 #include <vector>
@@ -53,27 +54,24 @@ class Scene : public hui::Widget {
 
         // std::cerr << pixels_ << std::endl;
 
-        pixels_ = window_->CreateImage();
+        pixels_.reset( pm->getWindow()->CreateImage() );
+        camera_pos_text_.reset( pm->getWindow()->CreateText() );
+        border_.reset( pm->getWindow()->CreateRectangle() );
+        select_rect_.reset( pm->getWindow()->CreateRectangle() );
 
         pixels_->SetSize( size );
 
-        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
-
         info_panel_.setParent( this );
 
-        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+        camera_pos_text_->SetFont( font );
+        camera_pos_text_->SetColor( { 255, 255, 255, 255 } );
+        camera_pos_text_->SetFontSize( 16 );
+        camera_pos_text_->SetPos( { 5.0f, 5.0f } );
 
-        camera_pos_text_.font     = font;
-        camera_pos_text_.color    = { 255, 255, 255, 255 };
-        camera_pos_text_.fontSize = 16;
-        camera_pos_text_.pos      = { 5.0f, 5.0f };
-
-        // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
-
-        border_.rect.size       = size;
-        border_.fill            = { 0, 0, 0, 0 };
-        border_.borderColor     = { 118, 185, 0, 255 };
-        border_.borderThickness = 2.0f;
+        border_->SetSize( size );
+        border_->SetFillColor( { 0, 0, 0, 0 } );
+        border_->SetBorderColor( { 118, 185, 0, 255 } );
+        border_->SetBorderThickness( 2.0f );
 
         // // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
 
@@ -157,6 +155,8 @@ class Scene : public hui::Widget {
     model::SceneManager&
     getModel()
     {
+        need_update_ = true;
+
         return model_;
     }
 
@@ -211,6 +211,11 @@ class Scene : public hui::Widget {
     void
     update()
     {
+        if ( !need_update_ && !model_.needUpdate() )
+        {
+            return;
+        }
+
         const size_t w = getSize().x;
         const size_t h = getSize().y;
 
@@ -247,6 +252,8 @@ class Scene : public hui::Widget {
         }
 
         setCameraPosString();
+
+        need_update_ = false;
     }
 
     void
@@ -258,7 +265,7 @@ class Scene : public hui::Widget {
         oss << "( " << std::fixed << std::setprecision( 1 ) << cam_pos.x << ", " << cam_pos.y
             << ", " << cam_pos.z << " )";
 
-        camera_pos_text_.text = oss.str();
+        camera_pos_text_->SetText( oss.str() );
     }
 
   public:
@@ -270,7 +277,7 @@ class Scene : public hui::Widget {
         // dr4::Rectangle cp = border_;
         // cp.rect.pos       = { 1, 1 };
 
-        texture_->Draw( *pixels_, { 0, 0 } );
+        texture_->Draw( *pixels_ );
 
         // window.draw( border_, widget_transform );
 
@@ -311,14 +318,13 @@ class Scene : public hui::Widget {
             // { { min_x, max_y }, gfx::core::Color::Red },
             // { { min_x, min_y }, gfx::core::Color::Red } };
 
-            dr4::Rectangle rect;
-            rect.rect.pos        = { min_x, min_y };
-            rect.rect.size       = { max_x - min_x, max_y - min_y };
-            rect.fill            = { 0, 0, 0, 0 };
-            rect.borderColor     = { 255, 0, 0, 255 };
-            rect.borderThickness = 2.0f;
+            select_rect_->SetPos( { min_x, min_y } );
+            select_rect_->SetSize( { max_x - min_x, max_y - min_y } );
+            select_rect_->SetFillColor( { 0, 0, 0, 0 } );
+            select_rect_->SetBorderColor( { 255, 0, 0, 255 } );
+            select_rect_->SetBorderThickness( 2.0f );
 
-            texture_->Draw( rect );
+            texture_->Draw( *select_rect_ );
             //
             // window.draw( outline.data(),
             //  outline.size(),
@@ -328,20 +334,23 @@ class Scene : public hui::Widget {
 
         info_panel_.Redraw();
 
-        texture_->Draw( camera_pos_text_ );
+        texture_->Draw( *camera_pos_text_ );
 
-        texture_->Draw( border_ );
+        texture_->Draw( *border_ );
 
         // parent_->getTexture()->Draw( *texture_, pos_ );
     }
 
   private:
-    dr4::Text           camera_pos_text_;
-    dr4::Rectangle      border_;
-    model::SceneManager model_;
-    dr4::Color          background_color_;
-    view::ObjInfoPanel  info_panel_;
-    dr4::Image*         pixels_;
+    bool need_update_ = true;
+
+    std::unique_ptr<dr4::Text>      camera_pos_text_;
+    std::unique_ptr<dr4::Rectangle> border_;
+    std::unique_ptr<dr4::Rectangle> select_rect_;
+    model::SceneManager             model_;
+    dr4::Color                      background_color_;
+    view::ObjInfoPanel              info_panel_;
+    std::unique_ptr<dr4::Image>     pixels_;
 };
 
 } // namespace view

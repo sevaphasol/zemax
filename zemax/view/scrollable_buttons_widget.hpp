@@ -18,10 +18,12 @@ class ScrollableButtonsWidget : public hui::ContainerWidget {
         // setPosition( Config::ControlPanel::Size );
         // setSize( Config::ControlPanel::Size );
 
-        border_.rect.size       = size;
-        border_.fill            = { 0, 0, 0, 0 };
-        border_.borderColor     = { 118, 185, 0, 255 };
-        border_.borderThickness = 2.f;
+        border_.reset( pm->getWindow()->CreateRectangle() );
+
+        border_->SetSize( size );
+        border_->SetFillColor( { 0, 0, 0, 0 } );
+        border_->SetBorderColor( { 118, 185, 0, 255 } );
+        border_->SetBorderThickness( 2.f );
 
         scroll_bar_.setParent( this );
     };
@@ -132,7 +134,7 @@ class ScrollableButtonsWidget : public hui::ContainerWidget {
 
         // texture_->Draw(bringToFront(border_))
 
-        texture_->Draw( border_ );
+        texture_->Draw( *border_ );
 
         // window.draw( border_, widget_transform );
     }
@@ -140,7 +142,7 @@ class ScrollableButtonsWidget : public hui::ContainerWidget {
   private:
     hui::ScrollBar scroll_bar_;
 
-    dr4::Rectangle border_;
+    std::unique_ptr<dr4::Rectangle> border_;
 
     int cur_active_button_  = 0;
     int prev_active_button_ = -1;

@@ -4,6 +4,7 @@
 #include "widget.hpp"
 
 #include <cmath>
+#include <memory>
 #include <optional>
 #include <stdexcept>
 
@@ -14,8 +15,10 @@ class Cursor : public hui::Widget {
     Cursor( cum::PluginManager* pm, float w, float h )
         : hui::Widget( pm, 0.0f, 0.0f, w, h ), color_( { 255, 255, 255, 255 } )
     {
-        rect_.fill      = color_;
-        rect_.rect.size = { w, h };
+        rect_.reset( pm->getWindow()->CreateRectangle() );
+
+        rect_->SetFillColor( color_ );
+        rect_->SetSize( { w, h } );
     }
 
     void
@@ -34,18 +37,18 @@ class Cursor : public hui::Widget {
     void
     setColor( const dr4::Color& color )
     {
-        rect_.fill = color;
+        rect_->SetFillColor( color );
     }
 
     void
     RedrawMyTexture() const override final
     {
-        texture_->Draw( rect_ );
+        texture_->Draw( *rect_ );
     }
 
   private:
-    dr4::Color     color_;
-    dr4::Rectangle rect_;
+    dr4::Color                      color_;
+    std::unique_ptr<dr4::Rectangle> rect_;
 };
 
 class TextField : public hui::ContainerWidget {
@@ -61,23 +64,27 @@ class TextField : public hui::ContainerWidget {
     {
         cursor_.setParent( this );
 
-        label_.fontSize = 12;
-        label_.color    = { 255, 255, 255, 255 };
-        label_.font     = font;
-        label_.text     = label;
+        border_.reset( pm->getWindow()->CreateRectangle() );
+        label_.reset( pm->getWindow()->CreateText() );
+        text_.reset( pm->getWindow()->CreateText() );
 
-        text_.fontSize = 12;
-        text_.color    = { 255, 255, 255, 255 };
-        text_.font     = font;
-        text_.pos      = { 1.8f * label_.text.length() * 6.5f, h * 0.1f };
+        label_->SetFontSize( 12 );
+        label_->SetColor( { 255, 255, 255, 255 } );
+        label_->SetFont( font );
+        label_->SetText( label );
 
-        border_.fill            = { 0, 0, 0, 0 };
-        border_.borderColor     = { 118, 185, 0, 255 };
-        border_.borderThickness = 1.0f;
-        border_.rect.size       = { w - 1.05f * label_.text.length() * 12.0f, h };
-        border_.rect.pos        = { 1.75f * label_.text.length() * 6.5f, 0 };
+        text_->SetFontSize( 12 );
+        text_->SetColor( { 255, 255, 255, 255 } );
+        text_->SetFont( font );
+        text_->SetPos( { 1.8f * label_->GetText().length() * 6.5f, h * 0.1f } );
 
-        cursor_.setRelPos( 1.9f * label_.text.length() * 7.0f, h * 0.1f );
+        border_->SetFillColor( { 0, 0, 0, 0 } );
+        border_->SetBorderColor( { 118, 185, 0, 255 } );
+        border_->SetBorderThickness( 1.0f );
+        border_->SetSize( { w - 1.05f * label_->GetText().length() * 12.0f, h } );
+        border_->SetPos( { 1.75f * label_->GetText().length() * 6.5f, 0 } );
+
+        cursor_.setRelPos( 1.9f * label_->GetText().length() * 7.0f, h * 0.1f );
     }
 
     TextField( cum::PluginManager* pm,
@@ -163,10 +170,10 @@ class TextField : public hui::ContainerWidget {
             return false;
         }
 
-        auto ch = event.info.text.unicode;
-        // auto old_w = text_.getLocalBounds().w;
+        const char* str   = event.info.text.unicode;
+        auto        old_w = text_->GetBounds().x;
 
-        if ( ch == '\b' )
+        if ( *str == '\b' )
         {
             if ( str_.size() > 0 )
             {
@@ -176,24 +183,24 @@ class TextField : public hui::ContainerWidget {
             }
         } else
         {
-            // if ( old_w >= 0.8 * border_.getSize().x )
-            // {
-            //     return true;
-            // }
+            if ( old_w >= 0.5 * border_->GetSize().x )
+            {
+                return true;
+            }
 
             // fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
 
-            str_ += ch;
+            str_ += *str;
         }
 
-        text_.text = str_;
+        text_->SetText( str_ );
 
         // fprintf( stderr, "%s\n", str_.data() );
 
-        // auto  new_w = text_.getLocalBounds().w;
-        // float ch_w  = new_w - old_w;
+        auto  new_w = text_->GetBounds().x;
+        float ch_w  = new_w - old_w;
 
-        // cursor_.move( ch_w );
+        cursor_.move( ch_w );
 
         return true;
     }
@@ -232,9 +239,9 @@ class TextField : public hui::ContainerWidget {
     void
     RedrawMyTexture() const override final
     {
-        texture_->Draw( label_ );
-        texture_->Draw( text_ );
-        texture_->Draw( border_ );
+        texture_->Draw( *label_ );
+        texture_->Draw( *text_ );
+        texture_->Draw( *border_ );
 
         if ( is_focused_ )
         {
@@ -244,17 +251,17 @@ class TextField : public hui::ContainerWidget {
     }
 
   private:
-    bool is_focused_;
+    bool is_focused_ = false;
 
     int govnokod_ = 0;
 
-    dr4::Text label_;
+    std::unique_ptr<dr4::Text> label_;
 
-    Cursor         cursor_;
-    dr4::Rectangle border_;
+    Cursor                          cursor_;
+    std::unique_ptr<dr4::Rectangle> border_;
 
-    std::string str_;
-    dr4::Text   text_;
+    std::string                str_;
+    std::unique_ptr<dr4::Text> text_;
 };
 
 } // namespace hui

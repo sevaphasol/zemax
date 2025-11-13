@@ -4,6 +4,7 @@
 #include "dr4/math/vec2.hpp"
 #include "dr4/texture.hpp"
 #include "widget.hpp"
+#include <memory>
 
 namespace hui {
 
@@ -55,12 +56,12 @@ class Button : public hui::Widget {
 
     bool is_pressed_just_now_ = false;
 
-    dr4::Rectangle   background_;
-    const dr4::Font* font_;
-    dr4::Text        label_;
-    dr4::Color       default_color_;
-    dr4::Color       hovered_color_;
-    dr4::Color       pressed_color_;
+    std::unique_ptr<dr4::Rectangle> background_;
+    const dr4::Font*                font_;
+    std::unique_ptr<dr4::Text>      label_;
+    dr4::Color                      default_color_;
+    dr4::Color                      hovered_color_;
+    dr4::Color                      pressed_color_;
 };
 
 } // namespace hui

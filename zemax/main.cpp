@@ -18,27 +18,16 @@ main()
 
     auto* dr4_backend = pm.getDrawLibBackend();
 
-    // pm.loadGetBounds();
     auto* window = dr4_backend->CreateWindow();
     window->SetSize( { zemax::Config::Window::Width, zemax::Config::Window::Height } );
     window->SetTitle( "Test" );
     pm.setWindow( window );
     hui::WindowManager wm( &pm, zemax::Config::Window::BackgroundColor );
     auto*              font = window->CreateFont();
-    font->loadFromFile( "assets/JetBrainsMono-Regular.ttf" );
+    font->LoadFromFile( "assets/JetBrainsMono-Regular.ttf" );
     wm.addWidget( std::make_unique<zemax::view::Zemax>( &pm, font ) );
-
+    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
     wm.run();
-
-    // gfx::ui::WindowManager wm( zemax::Config::Window::Width,
-    //    zemax::Config::Window::Height,
-    //    zemax::Config::Window::Title );
-    //
-    // wm.setBackgroundColor( zemax::Config::Window::BackgroundColor );
-    //
-    // wm.addWidget( std::make_unique<zemax::view::Zemax>() );
-    //
-    // wm.run();
 
     return 0;
 }

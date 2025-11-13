@@ -42,15 +42,17 @@ class ControlPanel : public hui::ContainerWidget {
                       Config::ControlPanel::ScrollBar::Position,
                       Config::ControlPanel::ScrollBar::Size )
     {
+        border_.reset( pm->getWindow()->CreateRectangle() );
+
         setDraggable( true );
 
         // setRelPos( Config::ControlPanel::Position );
         // setSize( Config::ControlPanel::Size );
 
-        border_.rect.size       = getSize();
-        border_.fill            = Config::ControlPanel::BackgroundColor;
-        border_.borderColor     = Config::ControlPanel::BorderColor;
-        border_.borderThickness = Config::ControlPanel::BorderThickness;
+        border_->SetSize( getSize() );
+        border_->SetFillColor( Config::ControlPanel::BackgroundColor );
+        border_->SetBorderColor( Config::ControlPanel::BorderColor );
+        border_->SetBorderThickness( Config::ControlPanel::BorderThickness );
 
         setupButton( ButtonCode::MoveLeft,
                      Config::ControlPanel::Button::MvL::Position,
@@ -498,7 +500,7 @@ class ControlPanel : public hui::ContainerWidget {
     virtual void
     RedrawMyTexture() const override final
     {
-        texture_->Draw( border_ );
+        texture_->Draw( *border_ );
 
         for ( const auto& button : buttons_ )
         {
@@ -517,7 +519,7 @@ class ControlPanel : public hui::ContainerWidget {
     zemax::model::SceneManager& scene_manager_;
     zemax::model::Camera&       camera_;
 
-    dr4::Rectangle border_;
+    std::unique_ptr<dr4::Rectangle> border_;
 };
 
 } // namespace view
