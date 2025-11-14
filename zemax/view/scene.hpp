@@ -103,6 +103,14 @@ class Scene : public hui::Widget {
                           gfx::core::Vector3f( 0, 3, -16 ),
                           1.5 );
 
+        model_.addSphere( model::Material( gfx::core::Color( 118, 185, 0 ), 0.0, 0.7f, 0.8f ),
+                          gfx::core::Vector3f( -1.5, -0.5, -13.6 ),
+                          1.5 );
+
+        model_.addSphere( model::Material( gfx::core::Color( 118, 185, 0 ), 0.0, 0.7f, 0.8f ),
+                          gfx::core::Vector3f( 1.2, -1.4, -14.1 ),
+                          1.0 );
+
         // model_.addAABB( model::Material( gfx::core::Color( 118, 185, 0 ), 0.9f
         // ),
         //                 gfx::core::Vector3f( 0, -1, -8 ),

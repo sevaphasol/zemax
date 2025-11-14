@@ -26,7 +26,7 @@ main()
     auto*              font = window->CreateFont();
     font->LoadFromFile( "assets/JetBrainsMono-Regular.ttf" );
     wm.addWidget( std::make_unique<zemax::view::Zemax>( &pm, font ) );
-    fprintf( stderr, "debug in %s:%d:%s\n", __FILE__, __LINE__, __PRETTY_FUNCTION__ );
+
     wm.run();
 
     return 0;

@@ -183,7 +183,7 @@ class TextField : public hui::ContainerWidget {
             }
         } else
         {
-            if ( old_w >= 0.5 * border_->GetSize().x )
+            if ( old_w >= 0.9 * border_->GetSize().x )
             {
                 return true;
             }

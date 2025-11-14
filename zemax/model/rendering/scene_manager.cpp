@@ -141,12 +141,50 @@ SceneManager::calcLightsColor( IntersectionContext& ctx )
 }
 
 gfx::core::Color
+SceneManager::calcRefractedColor( IntersectionContext& ctx )
+{
+    gfx::core::Vector3f i = ctx.view_ray.getDir().normalize();
+    gfx::core::Vector3f n = ctx.normal.normalize();
+
+    float cosi = scalarMul( i, n );
+
+    float etai = 1.0f;
+    float etat = ctx.closest_object->getMaterial().refraction_eta;
+
+    if ( cosi > 0.0f )
+    {
+        std::swap( etai, etat );
+        n = -n;
+    }
+
+    float eta = etai / etat;
+    float k   = 1.0f - eta * eta * ( 1.0f - cosi * cosi );
+
+    if ( k < 0.0f )
+    {
+        return calcReflectedColor( ctx );
+    }
+
+    gfx::core::Vector3f refract_dir = ( eta * i ) + ( eta * cosi - std::sqrt( k ) ) * n;
+    refract_dir                     = refract_dir.normalize();
+
+    Ray refracted_ray( refract_dir, ctx.intersection_point + refract_dir * 1e-4f );
+
+    auto old_ctx = ctx;
+
+    ctx.view_ray = refracted_ray;
+    ctx.depth++;
+    gfx::core::Color color = calcRayColor( ctx );
+
+    ctx = old_ctx;
+
+    return color;
+}
+
+gfx::core::Color
 SceneManager::calcReflectedColor( IntersectionContext& ctx )
 {
-    gfx::core::Vector3f reflect_dir = ctx.view_ray.getDir().calcReflected(
-        ctx.normal ); // ctx.view_ray.getDir().calcReflected( ctx.normal );
-                      // ctx.view_ray.getDir() -
-                      // ctx.normal * ( scalarMul( ctx.view_ray.getDir(), ctx.normal ) * 2.0f );
+    gfx::core::Vector3f reflect_dir = ctx.view_ray.getDir().calcReflected( ctx.normal );
 
     Ray reflected_ray( reflect_dir, ctx.intersection_point + 1e-4f * ctx.normal );
 
@@ -165,13 +203,22 @@ gfx::core::Color
 SceneManager::calcColor( IntersectionContext& ctx )
 {
     gfx::core::Color light_color     = calcLightsColor( ctx );
-    gfx::core::Color reflected_color = calcReflectedColor( ctx );
+    gfx::core::Color reflected_color = { 0, 0, 0 };
+    gfx::core::Color refracted_color = { 0, 0, 0 };
+
+    if ( ctx.closest_object->getMaterial().refraction_factor > 0.0f )
+    {
+        refracted_color = calcRefractedColor( ctx );
+    } else if ( ctx.closest_object->getMaterial().reflection_factor > 0.0f )
+    {
+        reflected_color = calcReflectedColor( ctx );
+    }
 
     float reflection_factor = ctx.closest_object->getMaterial().reflection_factor;
     float refraction_factor = ctx.closest_object->getMaterial().refraction_factor;
 
     return ( 1 - reflection_factor - refraction_factor ) * light_color +
-           reflection_factor * reflected_color;
+           reflection_factor * reflected_color + refraction_factor * refracted_color;
 }
 
 gfx::core::Color

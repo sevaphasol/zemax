@@ -270,6 +270,9 @@ class SceneManager {
     moveLights( const gfx::core::Vector3f& delta );
 
     gfx::core::Color
+    calcRefractedColor( IntersectionContext& ctx );
+
+    gfx::core::Color
     calcReflectedColor( IntersectionContext& ctx );
 
     gfx::core::Color

@@ -178,7 +178,7 @@ struct Config
 
         struct TextField
         {
-            static inline const dr4::Vec2f Size = { 40.0f, 20.0f };
+            static inline const dr4::Vec2f Size = { 80.0f, 20.0f };
 
             struct X
             {
@@ -206,25 +206,25 @@ struct Config
 
             struct R
             {
-                static inline const dr4::Vec2f  Position = { 195.0f, 570.0f };
+                static inline const dr4::Vec2f  Position = { 235.0f, 570.0f };
                 static inline const char* const Title    = "R";
             };
 
             struct G
             {
-                static inline const dr4::Vec2f  Position = { 195.0f, 600.0f };
+                static inline const dr4::Vec2f  Position = { 235.0f, 600.0f };
                 static inline const char* const Title    = "G";
             };
 
             struct B
             {
-                static inline const dr4::Vec2f  Position = { 195.0f, 630.0f };
+                static inline const dr4::Vec2f  Position = { 235.0f, 630.0f };
                 static inline const char* const Title    = "B";
             };
 
             struct RefFactor
             {
-                static inline const dr4::Vec2f  Position = { 195.0f, 660.0f };
+                static inline const dr4::Vec2f  Position = { 235.0f, 660.0f };
                 static inline const char* const Title    = "F";
             };
         };
